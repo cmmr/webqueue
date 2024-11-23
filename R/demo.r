@@ -152,7 +152,7 @@ demo <- function () {
   }
 
 
-  svr <- Server$new(
+  svr <- WebQueue$new(
     handler = handler,
     host    = '127.0.0.1',
     port    = 8080L,

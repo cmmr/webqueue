@@ -1,11 +1,20 @@
 importFrom("cli", "ansi_strip", "cli_abort", "cli_text")
-importFrom("httpuv", "startServer")
+importFrom("httpuv", "startServer", "staticPath", "staticPathOptions", "randomPort")
 importFrom("jobqueue", "Queue")
+importFrom("jsonlite", "fromJSON", "toJSON", "unbox")
 importFrom("parallel", "detectCores")
 importFrom("promises", "as.promise", "then")
 importFrom("R6", "R6Class")
 importFrom("rlang", "as_function", "catch_cnd", "is_formula", "is_scalar_integerish")
 importFrom("webutils", "parse_http", "parse_query")
-importFrom("utils", "capture.output")
+importFrom("utils", "capture.output", "hasName", "str")
 
-export(`Server`)
+export(`WebQueue`)
+
+export(`randomPort`)
+export(`staticPath`)
+export(`staticPathOptions`)
+
+export(`fromJSON`)
+export(`toJSON`)
+export(`unbox`)
