@@ -299,57 +299,37 @@ parse_cookies <- function (req) {
 format_200 <- function (result) {
   
   #________________________________________________________
-  # Ensure result is a properly formatted HTTP response.
+  # Hand 'AsIs' objects back to httpuv unchanged.
   #________________________________________________________
-  if (identical(sort(names(result)), c('body', 'headers', 'status'))) {
-    
-    resp <- result
-    
-  } else {
-    
-    if (length(result) == 0) result <- 200L
-    
-    if (is_scalar_integerish(result)) {
-      
-      resp <- list(
-        headers = list(),
-        status  = as.integer(result), 
-        body    = character(0) )
-    
-    } else if (is.list(result)) {
-      
-      resp <- list(
-        headers = list('Content-Type' = 'application/json'),
-        status  = 200L, 
-        body    = toJSON(result, na="null") )
-      
-    } else {
-      
-      resp <- list(
-        headers = list('Content-Type' = 'text/html; charset=utf-8'),
-        status  = 200L,
-        body    = paste(collapse='\n', as.character(result)) )
-    }
-  }
+  if (inherits(result, 'AsIs')) return (result)
   
-  return (resp)
+  result <- response(result)
+  return (result)
 }
 
 
 format_500 <- function (result) {
   
-  if (is_scalar_integerish(result))        { status <- as.integer(result); result <- '' }
+  #________________________________________________________
+  # Hand 'AsIs' objects back to httpuv unchanged.
+  #________________________________________________________
+  if (inherits(result, 'AsIs')) return (result)
+  
+  
+  #________________________________________________________
+  # Convert error object to HTTP status code.
+  #________________________________________________________
+  if (is_int(result))                      { status <- result; result <- '' }
   else if (inherits(result, 'timeout'))    { status <- 408L } # Request Timeout
   else if (inherits(result, 'superseded')) { status <- 409L } # Conflict
   else if (inherits(result, 'interrupt'))  { status <- 499L } # Client Closed Request
   else                                     { status <- 500L } # Internal Server Error
   
-  resp <- list(
-    status  = status, 
-    headers = list(), 
-    body    = ansi_strip(paste(collapse='\n', as.character(result))) )
+  result <- response(
+    status = status, 
+    body   = ansi_strip(paste(collapse='\n', as.character(result))) )
   
-  return (resp)
+  return (result)
 }
 
 

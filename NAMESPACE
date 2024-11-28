@@ -1,15 +1,20 @@
-importFrom("cli", "ansi_strip", "cli_abort", "cli_text")
+importFrom("cli", "ansi_strip", "cli_abort", "cli_text", "style_italic", "col_grey", "style_bold")
 importFrom("httpuv", "startServer", "staticPath", "staticPathOptions", "randomPort")
 importFrom("jobqueue", "Queue")
-importFrom("jsonlite", "fromJSON", "toJSON", "unbox")
+importFrom("jsonlite", "fromJSON", "minify", "prettify", "toJSON", "unbox")
 importFrom("parallel", "detectCores")
 importFrom("promises", "as.promise", "then")
 importFrom("R6", "R6Class")
-importFrom("rlang", "as_function", "catch_cnd", "is_formula", "is_scalar_integerish")
+importFrom("rlang", "as_function", "catch_cnd", "is_formula")
 importFrom("webutils", "parse_http", "parse_query")
 importFrom("utils", "capture.output", "hasName", "str")
 
+export(`cookie`)
+export(`js_obj`)
+export(`response`)
 export(`WebQueue`)
+
+S3method(print, response)
 
 export(`randomPort`)
 export(`staticPath`)
