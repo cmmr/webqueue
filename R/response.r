@@ -14,8 +14,8 @@
 #' @param status    A HTTP response status code.
 #' @param headers   A named character vector of HTTP headers. A list-like
 #'                  object is acceptable if all elements are simple strings.
-#' @param cookies   A named character vector of cookies to set.
-#'                  `cookie()` can aid in making these strings.
+#' @param ...       Objects created by `header()` and/or `cookie()`. Or 
+#'                  key-value pairs to add to `headers`.
 #' 
 #' @return A `<response/AsIs>` object. Essentially a list with elements named
 #'         `body`, `status`, and `headers` formatted as 'httpuv' expects.
@@ -27,47 +27,217 @@
 #'     
 #'     response(list(name = unbox('Peter'), pi = pi))
 #'          
-#'     response(307L, headers = c(Location = '/new/file.html'))
+#'     response(307L, Location = '/new/file.html')
 #'     
-#'     response(cookies = c(id = cookie(123, http_only = TRUE)))
+#'     # The `body` and `status` slots also handle header objects.
+#'     response(cookie(id = 123, http_only = TRUE))
+#'     
+#'     # Allow javascript to access custom headers.
+#'     uid <- header('x-user-id'    = 100, expose = TRUE)
+#'     sid <- header('x-session-id' = 303, expose = TRUE)
+#'     response(uid, sid)
 #'     
 
-response <- function (body = NULL, status = 200L, headers = NULL, cookies = NULL) {
+response <- function (body = NULL, status = 200L, headers = NULL, ...) {
+  
+  headers <- c(as.list(headers), ...)
+  if (inherits(status, 'header')) { headers <- c(status, headers); status <- 200L }
+  if (inherits(body,   'header')) { headers <- c(body,   headers); body   <- NULL }
+  
+  for (i in seq_along(headers)) {
+    headers[[i]] <- as.character(headers[[i]])
+    stopifnot(
+      valid_string(names(headers)[[i]], ok = '-_'),
+      valid_string(headers[[i]], ok = '_ :;.,\\/"\'?!(){}[]@<>=-+*#$&`|~^%')
+    )
+  }
   
   if (is_int(body)) { status <- body; body <- NULL }
-  else              { status <- as.integer(status) }
+  status <- as.integer(status)
   stopifnot(status >= 100L, status < 600L)
-  
-  headers <- as.list(headers, all.names = TRUE)
-  cookies <- as.list(cookies, all.names = TRUE)
-  stopifnot(all_named(headers), all(sapply(headers, is_string)))
-  stopifnot(all_named(cookies), all(sapply(cookies, is_string)))
   
   if (!inherits(body, c('list', 'json', 'character', 'NULL')))
     cli_abort('`body` must be of class list, character, json, or NULL, not {.type {body}}.')
   
-  for (i in seq_along(cookies)) {
-    cookie_name <- names(cookies)[[i]]
-    stopifnot(valid_string(cookie_name, no = ' ()<>@,;:\\"/[]?={}'))
-    cookie  <- paste0(cookie_name, '=', cookies[[i]])
-    headers <- c(headers, list('Set-Cookie' = cookie))
-  }
-  
+  # Set content-type unless it's already set.
   if (!'content-type' %in% tolower(names(headers)))
     headers[['Content-Type']] <- {
       if (inherits(body, c('list', 'json'))) { 'application/json; charset=utf-8' }
       else if (inherits(body, 'character'))  { 'text/html; charset=utf-8'        }
     }
   
+  # Combine multiple 'Access-Control-Expose-Headers' into one.
+  aceh <- tolower(names(headers)) == 'access-control-expose-headers'
+  if (sum(aceh) > 1) {
+    merged  <- paste(collapse = ', ', headers[aceh])
+    headers <- headers[!aceh]
+    headers[['Access-Control-Expose-Headers']] <- merged
+  }
+  
   if (inherits(body, 'list')) body <- toJSON(body, null = 'null')
   if (inherits(body, 'json')) body <- as.character(body)
-  if (!is.null(body))         body <- paste0(body, collapse = '')
+  body <- if (length(body) > 0) paste0(body, collapse = '') else NULL
   
   resp <- structure(
     .Data = list(body = body, status = status, headers = headers),
     class = c('response', 'AsIs') )
   
   return (resp)
+}
+
+
+
+#' Assemble an HTTP header.
+#' 
+#' See https://developer.mozilla.org/en-US/docs/Glossary/Response_header for 
+#' example response headers and their purpose.
+#' 
+#' @param ...       A single key-value pair.
+#' @param expose    Allow javascript to read this header.
+#' @param name      Explicitly set the name (key) in the key-value pair.
+#' @param value     Explicitly set the value in the key-value pair.
+#' 
+#' @return A 'header' object that can be passed to `response()`.
+#' 
+#' @export
+#' @examples
+#' 
+#'     library(webqueue)
+#'     
+#'     header(name = 'Location', value = '/index.html')
+#'     
+#'     Location <- '/index.html'
+#'     header(Location)
+#'     
+#'     response(307L, header(Location = '/index.html'))
+#'     
+#'     # Allow javascript to access a header value
+#'     header('x-user-id' = 100, expose = TRUE)
+#'     
+
+header <- function (..., expose = FALSE, name = ...names(), value = ..1) {
+  
+  header_name  <- name[[1]] %||% as.character(substitute(...))
+  header_value <- as.character(value)
+  
+  stopifnot(
+    valid_string(header_name,  ok = '-_'),
+    valid_string(header_value, ok = '_ :;.,\\/"\'?!(){}[]@<>=-+*#$&`|~^%')
+  )
+  
+  hdr        <- list(header_value)
+  names(hdr) <- header_name
+  
+  if (isTRUE(expose))
+    hdr <- c(hdr, list('Access-Control-Expose-Headers' = header_name))
+  
+  class(hdr) <- 'header'
+  return (hdr)
+  
+}
+
+
+
+#' Assemble an HTTP cookie.
+#' 
+#' See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie for 
+#' a more in-depth description of each parameter's purpose.
+#' 
+#' @param ...          A single key-value pair.
+#' @param max_age      The number of seconds until expiration. Omit to create a 
+#'                     session cookie. `Inf` is mapped to 34560000L (400 days).
+#' @param domain       Send with requests to this host.
+#' @param path         Send with requests to this path.
+#' @param same_site    `'Strict'`, `'Lax'`, or `'None'`.
+#'                     `secure` required for `'None'`.
+#' @param secure        Only send over HTTPS.
+#' @param http_only     Disallow javascript access.
+#' @param partitioned   Use partitioned storage. `secure` required.
+#' @param name          Explicitly set the name (key) in the key-value pair.
+#' @param value         Explicitly set the value in the key-value pair.
+#' 
+#' @return A 'header' object that can be passed to `response()`.
+#' 
+#' @export
+#' @examples
+#' 
+#'     library(webqueue)
+#'     
+#'     cookie(xyz = 123, max_age = 3600, http_only = TRUE)
+#'     
+#'     token <- 'randomstring123'
+#'     cookie(token)
+#'     
+#'     response(cookie(token = 'randomstring123'))
+#'     
+
+cookie <- function (
+    ...,
+    max_age = NULL, domain = NULL, path = NULL, same_site = 'Lax', 
+    secure = FALSE, http_only = FALSE, partitioned = FALSE, 
+    name = ...names(), value = ..1 ) {
+  
+  cookie_name  <- name[[1]] %||% as.character(substitute(...))
+  cookie_value <- as.character(value)
+  
+  if (identical(max_age, Inf)) max_age <- 34560000L
+  
+  stopifnot(
+    valid_string(cookie_name,  no = ' ()<>@,;:\\"/[]?={}'),
+    valid_string(cookie_value, no = ' ",;\\'),
+    is.null(max_age) || is_int(max_age <- as.integer(max_age)),
+    valid_string(domain, ok = '.-',                 null_ok = TRUE),
+    valid_string(path,   ok = ".-_~!$&'()*+,=:@%/", null_ok = TRUE),
+    same_site %in% c('None', 'Lax', 'Strict'),
+    is_bool(secure),
+    is_bool(http_only),
+    is_bool(partitioned)
+  )
+  
+  cookie_string <- paste(collapse = '; ', c(
+    paste0(cookie_name, '=', cookie_value),
+    if (!is.null(max_age))  paste0('Max-Age=',  max_age),
+    if (!is.null(domain))   paste0('Domain=',   domain),
+    if (!is.null(path))     paste0('Path=',     path),
+    if (same_site != 'Lax') paste0('SameSite=', same_site),
+    if (secure)             'Secure',
+    if (http_only)          'HttpOnly',
+    if (partitioned)        'Partitioned'
+  ))
+  
+  hdr <- header(name = 'Set-Cookie', value = cookie_string)
+  
+  return (hdr)
+}
+
+
+
+#' Ensure a list becomes a JSON object.
+#' 
+#' This function returns a list that `jsonlite::toJSON()` will always encode as 
+#' `{}`.
+#' 
+#' @param x   A list, or list-like object.
+#' 
+#' @return A list with the names attribute set.
+#' 
+#' @export
+#' @examples
+#' 
+#'     library(webqueue)
+#'     
+#'     updates <- list()
+#'     
+#'     response(list(updates = updates))
+#'     
+#'     response(list(updates = js_obj(updates)))
+#'     
+
+js_obj <- function (x = list()) {
+  x <- as.list(x, all.names = TRUE)
+  if (is.null(names(x)))
+    names(x) <- character(length(x))
+  return (x)
 }
 
 
@@ -127,102 +297,17 @@ print.response <- function (x, ...) {
 }
 
 
-#' Ensure a list becomes a JSON object.
+
+
+#' Print a header object.
 #' 
-#' This function returns a list that `jsonlite::toJSON()` will always encode as 
-#' `{}`.
+#' @param x   An object of class `header`.
+#' @param ...   Not used.
 #' 
-#' @param x   A list, or list-like object.
-#' 
-#' @return A list with the names attribute set.
-#' 
+#' @noRd
+#' @keywords internal
 #' @export
-#' @examples
-#' 
-#'     library(webqueue)
-#'     
-#'     updates <- list()
-#'     
-#'     response(list(updates = updates))
-#'     
-#'     response(list(updates = js_obj(updates)))
-#'     
-
-js_obj <- function (x = list()) {
-  x <- as.list(x, all.names = TRUE)
-  if (is.null(names(x)))
-    names(x) <- character(length(x))
-  return (x)
-}
-
-
-
-#' Assemble an HTTP cookie.
-#' 
-#' See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie for 
-#' a more in-depth description of each parameter's purpose.
-#' 
-#' @param cookie_value   The value (string) to assign to the cookie. 
-#'                       Cannot contain white space, double quotes, commas, 
-#'                       semicolons, or slashes (`" , ; \\`).
-#' 
-#' @param max_age      The number of seconds until expiration. 
-#'                     Omit to create a session cookie,
-#' 
-#' @param domain       Send with requests to this host.
-#' 
-#' @param path         Send with requests to this path.
-#' 
-#' @param same_site    `'Strict'`, `'Lax'`, or `'None'`.
-#'                     `secure` required for `'None'`.
-#' 
-#' @param secure        Only send over HTTPS.
-#' 
-#' @param http_only     Disallow javascript access.
-#' 
-#' @param partitioned   Use partitioned storage. `secure` required.
-#' 
-#' @return A string.
-#' 
-#' @export
-#' @examples
-#' 
-#'     library(webqueue)
-#'     
-#'     cookie('xyz', max_age = 3600, http_only = TRUE)
-#'     
-#'     response(cookies = c(token = cookie('randomstring123')))
-#'     
-
-cookie <- function (
-    cookie_value, 
-    max_age = NULL, domain = NULL, path = NULL, same_site = 'Lax', 
-    secure = FALSE, http_only = FALSE, partitioned = FALSE ) {
-  
-  cookie_value <- as.character(cookie_value)
-  if (!is.null(max_age)) max_age <- as.integer(max_age)
-  
-  stopifnot(
-    valid_string(cookie_value, no = ' ",;\\', null_ok = FALSE),
-    is.null(max_age) || is_int(max_age),
-    valid_string(domain, ok = '.-'),
-    valid_string(path,   ok = ".-_~!$&'()*+,=:@%/"),
-    same_site %in% c('None', 'Lax', 'Strict'),
-    is_bool(secure),
-    is_bool(http_only),
-    is_bool(partitioned)
-  )
-  
-  str <- paste(collapse = '; ', c(
-    cookie_value,
-    if (!is.null(max_age))  paste0('Max-Age=',  max_age),
-    if (!is.null(domain))   paste0('Domain=',   domain),
-    if (!is.null(path))     paste0('Path=',     path),
-    if (same_site != 'Lax') paste0('SameSite=', same_site),
-    if (secure)             'Secure',
-    if (http_only)          'HttpOnly',
-    if (partitioned)        'Partitioned'
-  ))
-  
-  return (str)
+print.header <- function (x, ...) {
+  for (i in seq_along(x))
+    cat(names(x)[[i]], ': ', x[[i]], '\n', sep = '')
 }

@@ -1,8 +1,8 @@
 Package: webqueue
 Type: Package
 Title: HTTP Server Using Multiple CPU Cores
-Version: 0.0.1.9002
-Date: 2024-11-27
+Version: 0.0.1.9003
+Date: 2024-11-29
 Authors@R: c(
     person(
       "Daniel P.", "Smith",

@@ -4,7 +4,7 @@
 \alias{response}
 \title{Compile an HTTP response.}
 \usage{
-response(body = NULL, status = 200L, headers = NULL, cookies = NULL)
+response(body = NULL, status = 200L, headers = NULL, ...)
 }
 \arguments{
 \item{body}{The content. A list will be encoded as JSON. A scalar
@@ -16,8 +16,8 @@ will be concatenated with no separator.}
 \item{headers}{A named character vector of HTTP headers. A list-like
 object is acceptable if all elements are simple strings.}
 
-\item{cookies}{A named character vector of cookies to set.
-\code{cookie()} can aid in making these strings.}
+\item{...}{Objects created by \code{header()} and/or \code{cookie()}. Or
+key-value pairs to add to \code{headers}.}
 }
 \value{
 A \verb{<response/AsIs>} object. Essentially a list with elements named
@@ -37,8 +37,14 @@ passed directly on to 'httpuv'.
     
     response(list(name = unbox('Peter'), pi = pi))
          
-    response(307L, headers = c(Location = '/new/file.html'))
+    response(307L, Location = '/new/file.html')
     
-    response(cookies = c(id = cookie(123, http_only = TRUE)))
+    # The `body` and `status` slots also handle header objects.
+    response(cookie(id = 123, http_only = TRUE))
+    
+    # Allow javascript to access custom headers.
+    uid <- header('x-user-id'    = 100, expose = TRUE)
+    sid <- header('x-session-id' = 303, expose = TRUE)
+    response(uid, sid)
     
 }

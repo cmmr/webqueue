@@ -28,7 +28,7 @@ all_named <- function (x) {
   return (TRUE)
 }
 
-valid_string <- function (x, ok = '', no = '', null_ok = TRUE) {
+valid_string <- function (x, ok = '', no = '', null_ok = FALSE) {
   
   if (is.null(x) && null_ok) return (TRUE)
   if (!is_string(x))         return (FALSE)

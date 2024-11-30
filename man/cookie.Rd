@@ -5,23 +5,23 @@
 \title{Assemble an HTTP cookie.}
 \usage{
 cookie(
-  cookie_value,
+  ...,
   max_age = NULL,
   domain = NULL,
   path = NULL,
   same_site = "Lax",
   secure = FALSE,
   http_only = FALSE,
-  partitioned = FALSE
+  partitioned = FALSE,
+  name = ...names(),
+  value = ..1
 )
 }
 \arguments{
-\item{cookie_value}{The value (string) to assign to the cookie.
-Cannot contain white space, double quotes, commas,
-semicolons, or slashes (\verb{" , ; \\\\}).}
+\item{...}{A single key-value pair.}
 
 \item{max_age}{The number of seconds until expiration.
-Omit to create a session cookie,}
+Omit to create a session cookie.}
 
 \item{domain}{Send with requests to this host.}
 
@@ -35,9 +35,13 @@ Omit to create a session cookie,}
 \item{http_only}{Disallow javascript access.}
 
 \item{partitioned}{Use partitioned storage. \code{secure} required.}
+
+\item{name}{Explicitly set the name (key) in the key-value pair.}
+
+\item{value}{Explicitly set the value in the key-value pair.}
 }
 \value{
-A string.
+A 'header' object that can be passed to \code{response()}.
 }
 \description{
 See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie for
@@ -47,8 +51,11 @@ a more in-depth description of each parameter's purpose.
 
     library(webqueue)
     
-    cookie('xyz', max_age = 3600, http_only = TRUE)
+    cookie(xyz = 123, max_age = 3600, http_only = TRUE)
     
-    response(cookies = c(token = cookie('randomstring123')))
+    token <- 'randomstring123'
+    cookie(token)
+    
+    response(cookie(token = 'randomstring123'))
     
 }

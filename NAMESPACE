@@ -5,15 +5,17 @@ importFrom("jsonlite", "fromJSON", "minify", "prettify", "toJSON", "unbox")
 importFrom("parallel", "detectCores")
 importFrom("promises", "as.promise", "then")
 importFrom("R6", "R6Class")
-importFrom("rlang", "as_function", "catch_cnd", "is_formula")
+importFrom("rlang", "%||%", "as_function", "catch_cnd", "is_formula")
 importFrom("webutils", "parse_http", "parse_query")
 importFrom("utils", "capture.output", "hasName", "str")
 
 export(`cookie`)
+export(`header`)
 export(`js_obj`)
 export(`response`)
 export(`WebQueue`)
 
+S3method(print, header)
 S3method(print, response)
 
 export(`randomPort`)
