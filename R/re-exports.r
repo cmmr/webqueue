@@ -16,3 +16,6 @@ jsonlite::toJSON
 
 #' @export
 jsonlite::unbox
+
+#' @export
+jobqueue::run_now

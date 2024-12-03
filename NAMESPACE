@@ -1,6 +1,6 @@
 importFrom("cli", "ansi_strip", "cli_abort", "cli_text", "style_italic", "col_grey", "style_bold")
 importFrom("httpuv", "startServer", "staticPath", "staticPathOptions", "randomPort")
-importFrom("jobqueue", "Queue")
+importFrom("jobqueue", "Queue", "run_now")
 importFrom("jsonlite", "fromJSON", "minify", "prettify", "toJSON", "unbox")
 importFrom("parallel", "detectCores")
 importFrom("promises", "as.promise", "then")
@@ -17,6 +17,8 @@ export(`WebQueue`)
 
 S3method(print, header)
 S3method(print, response)
+
+export(`run_now`)
 
 export(`randomPort`)
 export(`staticPath`)
