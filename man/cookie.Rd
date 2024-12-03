@@ -20,8 +20,8 @@ cookie(
 \arguments{
 \item{...}{A single key-value pair.}
 
-\item{max_age}{The number of seconds until expiration.
-Omit to create a session cookie.}
+\item{max_age}{The number of seconds until expiration. Omit to create a
+session cookie. \code{Inf} is mapped to 34560000L (400 days).}
 
 \item{domain}{Send with requests to this host.}
 
