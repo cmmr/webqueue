@@ -38,7 +38,7 @@ demo <- function () { # nocov start
             </main>
             <footer class="container">
               <small>
-                See also <a href="https://cmmr.github.io/jobqueue/" class="secondary">https://cmmr.github.io/jobqueue/</a>
+                See also <a href="https://cmmr.github.io/webqueue/" class="secondary">https://cmmr.github.io/webqueue/</a>
               </small>
             </footer>
           </body>
