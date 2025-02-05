@@ -1,11 +1,12 @@
 
 
 
-demo <- function () {
+demo <- function () { # nocov start
 
-  # A functions that will be available on the worker processes.
+  # List of variables that will be available on the worker processes.
   globals <- list(
-
+    
+    # HTML template for the website
     template = function (header, text) {
       paste0('
         <!doctype html>
@@ -15,7 +16,7 @@ demo <- function () {
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <meta name="color-scheme" content="light dark">
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-            <title>JobQueue | WebQueue Demo</title>
+            <title>WebQueue Demo</title>
           </head>
           <body>
             <header class="container">
@@ -44,7 +45,9 @@ demo <- function () {
         </html>
       ')
     }, # /template
-
+    
+    
+    # Generate an HTML input form
     form = function (name, type, value, button, action = NULL) {
       value  <- shQuote(ifelse(is.null(value), '', value))
       method <- ifelse(is.null(action), '', ' method = "POST"')
@@ -56,7 +59,7 @@ demo <- function () {
           <input type="submit" value="', button, '">
           </fieldset>
         </form> ')
-    }
+    } # /form
   )
 
 
@@ -68,8 +71,9 @@ demo <- function () {
     if (page == '/date') {
       header <- "Curent Date and Time"
       text   <- paste0('<pre><code>', Sys.time(), '</code></pre>')
-
-    } else if (page == '/greet') {
+    }
+    
+    else if (page == '/greet') {
       header <- "Interactive Greeting"
       text   <- paste0(
         ifelse(
@@ -88,8 +92,9 @@ demo <- function () {
         '</table>',
         '</blockquote>'
       )
-
-    } else if (page == '/req') {
+    }
+    
+    else if (page == '/req') {
 
       escape <- function (nm) {
         val <- get(nm, req)
@@ -116,7 +121,9 @@ demo <- function () {
       header <- "Content of this HTTP Request"
       text   <- paste0('<table>', rows, '</table>')
 
-    } else if (startsWith(page, '/sleep')) {
+    }
+    
+    else if (startsWith(page, '/sleep')) {
 
       wait <- ifelse(is.null(req$ARGS$wait), 0, as.integer(req$ARGS$wait))
 
@@ -126,18 +133,16 @@ demo <- function () {
 
       header <- paste('Waited', wait, 'seconds')
       text   <- paste0(
-        '<pre>',
-        '<code>',
+        '<pre><code>',
         'Started:  ', t1, '\n',
         'Finished: ', t2,
-        '</code>',
-        '</pre>',
+        '</code></pre>',
         '<hr>',
         globals$form('wait', 'number', wait, 'Sleep'),
-        'If more than the maximum of 10 seconds, the job will be automatically stopped before finishing.')
-
-
-    } else {
+        'If more than the maximum of 5 seconds, the job will be automatically stopped before finishing.' )
+    }
+    
+    else {
       header <- "Welcome to WebQueue"
       text   <- "Select a link above to explore what R's request handler can see and do."
     }
@@ -146,6 +151,7 @@ demo <- function () {
     return (html)
   }
 
+  
   # Ignore requests for a website fav icon.
   hook <- function (job) {
     if (job$vars$req$PATH_INFO == '/favicon.ico') job$stop(404L)
@@ -156,14 +162,14 @@ demo <- function () {
     handler = handler,
     host    = '127.0.0.1',
     port    = 8080L,
-    timeout = 10,
+    timeout = 5,
     hooks   = list(created = hook),
-    stop_id = ~{ .$GET$stop_id },
-    copy_id = ~{ .$GET$copy_id },
+    stop_id = ~{ .$ARGS$stop_id },
+    copy_id = ~{ .$ARGS$copy_id },
     globals = globals,
     workers = 4L )
 
   cli_text("Site available at {.url http://127.0.0.1:8080}")
 
   return (svr)
-}
+} # nocov end

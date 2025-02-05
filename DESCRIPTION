@@ -1,8 +1,8 @@
 Package: webqueue
 Type: Package
 Title: HTTP Server Using Multiple CPU Cores
-Version: 0.0.1.9004
-Date: 2024-12-03
+Version: 0.0.1.9005
+Date: 2025-02-05
 Authors@R: c(
     person(
       "Daniel P.", "Smith",
@@ -28,11 +28,13 @@ Imports:
     httpuv,
     jsonlite,
     jobqueue,
-    parallel,
+    parallelly,
     promises,
     R6,
     rlang,
     webutils,
     utils
 Suggests: 
-    testthat (>= 3.0.0)
+    httr2,
+    testthat (>= 3.0.0),
+    withr

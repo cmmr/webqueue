@@ -84,6 +84,15 @@
 #' 
 #'
 #' @export
+#' @examples
+#'     
+#'     if (FALSE) {
+#' 
+#'       svr <- WebQueue$new(
+#'         handler = function (request, globals) 'Hello World!',
+#'         host    = '127.0.0.1',
+#'         port    = 8080L )
+#'     }
 #' 
 
 WebQueue <- R6Class(
@@ -104,7 +113,7 @@ WebQueue <- R6Class(
         globals   = list(),
         packages  = NULL,
         init      = NULL,
-        max_cpus  = detectCores(),
+        max_cpus  = availableCores(),
         workers   = ceiling(max_cpus * 1.2),
         timeout   = NULL,
         hooks     = NULL,
@@ -169,10 +178,7 @@ WebQueue <- R6Class(
     #' Print method for a WebQueue.
     #' @param ... Arguments are not used currently.
     print = function (...) {
-      host <- self$host
-      if (host == '0.0.0.0') host <- 'localhost'
-      url <- paste0('http://', host, ':', self$port)
-      cli_text('{.cls {class(self)}} on {.url {url}}')
+      cli_text('{.cls {class(self)}} on {.url {self$url}}')
     },
     
     
@@ -250,7 +256,18 @@ WebQueue <- R6Class(
     
     #' @field port
     #' Port bound by `$httpuv`.
-    port = function () private$.httpuv$getPort()
+    port = function () private$.httpuv$getPort(),
+    
+    #' @field url
+    #' URL where the server is available.
+    url = function () {
+      host <- self$host
+      port <- self$port
+      paste0(
+        'http://',
+        ifelse(host == '0.0.0.0', 'localhost', host),
+        ifelse(port == 80L, '', paste0(':', port)) )
+    }
   )
 )
 

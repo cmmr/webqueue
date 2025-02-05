@@ -247,7 +247,6 @@ js_obj <- function (x = list()) {
 #' @param ...   Not used.
 #' 
 #' @noRd
-#' @keywords internal
 #' @export
 print.response <- function (x, ...) {
   
@@ -305,7 +304,6 @@ print.response <- function (x, ...) {
 #' @param ...   Not used.
 #' 
 #' @noRd
-#' @keywords internal
 #' @export
 print.header <- function (x, ...) {
   for (i in seq_along(x))

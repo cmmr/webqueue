@@ -10,6 +10,7 @@
 \alias{toJSON}
 \alias{unbox}
 \alias{run_now}
+\alias{availableCores}
 \title{Objects exported from other packages}
 \keyword{internal}
 \description{
@@ -22,5 +23,7 @@ below to see their documentation.
   \item{jobqueue}{\code{\link[jobqueue:reexports]{run_now}}}
 
   \item{jsonlite}{\code{\link[jsonlite]{fromJSON}}, \code{\link[jsonlite:fromJSON]{toJSON}}, \code{\link[jsonlite]{unbox}}}
+
+  \item{parallelly}{\code{\link[parallelly]{availableCores}}}
 }}
 

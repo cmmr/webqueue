@@ -1,8 +1,8 @@
 importFrom("cli", "ansi_strip", "cli_abort", "cli_text", "style_italic", "col_grey", "style_bold")
 importFrom("httpuv", "startServer", "staticPath", "staticPathOptions", "randomPort")
-importFrom("jobqueue", "Queue", "run_now")
+importFrom("jobqueue", "Queue", "run_now", "%<>%", "%>%")
 importFrom("jsonlite", "fromJSON", "minify", "prettify", "toJSON", "unbox")
-importFrom("parallel", "detectCores")
+importFrom("parallelly", "availableCores")
 importFrom("promises", "as.promise", "then")
 importFrom("R6", "R6Class")
 importFrom("rlang", "%||%", "as_function", "catch_cnd", "is_formula")
@@ -19,6 +19,8 @@ S3method(print, header)
 S3method(print, response)
 
 export(`run_now`)
+
+export(`availableCores`)
 
 export(`randomPort`)
 export(`staticPath`)

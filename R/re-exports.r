@@ -19,3 +19,6 @@ jsonlite::unbox
 
 #' @export
 jobqueue::run_now
+
+#' @export
+parallelly::availableCores

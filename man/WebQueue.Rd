@@ -6,6 +6,17 @@
 \description{
 Connects the 'httpuv' and 'jobqueue' R packages.
 }
+\examples{
+    
+    if (FALSE) {
+
+      svr <- WebQueue$new(
+        handler = function (request, globals) 'Hello World!',
+        host    = '127.0.0.1',
+        port    = 8080L )
+    }
+
+}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -20,6 +31,8 @@ Connects the 'httpuv' and 'jobqueue' R packages.
 \item{\code{host}}{Host bound by \verb{$httpuv}.}
 
 \item{\code{port}}{Port bound by \verb{$httpuv}.}
+
+\item{\code{url}}{URL where the server is available.}
 }
 \if{html}{\out{</div>}}
 }
@@ -45,7 +58,7 @@ Creates an httpuv::WebServer with requests handled by a jobqueue::Queue.
   globals = list(),
   packages = NULL,
   init = NULL,
-  max_cpus = detectCores(),
+  max_cpus = availableCores(),
   workers = ceiling(max_cpus * 1.2),
   timeout = NULL,
   hooks = NULL,
