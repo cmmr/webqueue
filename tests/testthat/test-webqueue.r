@@ -26,8 +26,13 @@ test_that("webqueue", {
   expect_error(WebQueue$new(handler = ~{ NULL }, globals = NULL))
   expect_error(WebQueue$new(handler = ~{ NULL }, parse = NA))
   
+  handler <- function (request, globals) {
+    if (!is.null(x <- request$COOKIES$txt)) return (x)
+    if (!is.null(x <- request$ARGS$txt))    return (x)
+    return ('Hello World!')
+  }
+  
   tmp         <- tempfile()
-  handler     <- ~{ .$COOKIES$txt %||% .$ARGS$txt %||% 'Hello World!' }
   staticPaths <- c('/tmp' = tmp)
   parse       <- ~{ if (is.null(.$ARGS$err)) . else stop() }
   
@@ -48,28 +53,28 @@ test_that("webqueue", {
   # HTTP client and server must be on separate R processes.
   worker <- jobqueue::Worker$new(globals = globals)$wait()
   
-  job <- jobqueue::Job$new({ fetch('http://127.0.0.1:8080') })
+  job <- jobqueue::Job$new({ fetch('http://localhost:8080') })
   worker$run(job)
   expect_identical(job$result, 'Hello World!')
   
-  job <- jobqueue::Job$new({ fetch('http://127.0.0.1:8080', 'xyz; b=5; txt=1=6') })
+  job <- jobqueue::Job$new({ fetch('http://localhost:8080', 'xyz; b=5; txt=1=6') })
   worker$run(job)
   expect_identical(job$result, '1=6')
   
-  job <- jobqueue::Job$new({ fetch('http://127.0.0.1:8080', query = list(txt='ABC')) })
+  job <- jobqueue::Job$new({ fetch('http://localhost:8080', query = list(txt='ABC')) })
   worker$run(job)
   expect_identical(job$result, 'ABC')
   
-  job <- jobqueue::Job$new({ fetch('http://127.0.0.1:8080', post = list(txt='XYZ')) })
+  job <- jobqueue::Job$new({ fetch('http://localhost:8080', post = list(txt='XYZ')) })
   worker$run(job)
   expect_identical(job$result, 'XYZ')
   
   cat(file = file.path(tmp, 'static.txt'), 'Static Content')
-  job <- jobqueue::Job$new({ fetch('http://127.0.0.1:8080/tmp/static.txt') })
+  job <- jobqueue::Job$new({ fetch('http://localhost:8080/tmp/static.txt') })
   worker$run(job)
   expect_identical(job$result, 'Static Content')
   
-  job <- jobqueue::Job$new({ fetch('http://127.0.0.1:8080', post = list(err='1')) })
+  job <- jobqueue::Job$new({ fetch('http://localhost:8080', post = list(err='1')) })
   worker$run(job)
   expect_s3_class(job$result, 'error')
   
