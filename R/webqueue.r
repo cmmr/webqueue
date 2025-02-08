@@ -64,6 +64,10 @@
 #'        this function, then the later Job will clone its output from the 
 #'        earlier Job. If the returned value is `NULL`, no Jobs will be cloned.
 #' 
+#' @param bg   Where/how to run the server. `TRUE`: on a separate R process.
+#'        `FALSE`: blocking on the current R process. `NULL`: non-blocking on 
+#'        the current R process.
+#' 
 #' @param quiet   If `TRUE`, suppress error messages from starting the 'httpuv' 
 #'        server.
 #' 
@@ -107,19 +111,20 @@ WebQueue <- R6Class(
     #' @return A `WebQueue` object.
     initialize = function (
         handler,
-        host      = '0.0.0.0',
-        port      = 8080L,
-        parse     = NULL,
-        globals   = list(),
-        packages  = NULL,
-        init      = NULL,
-        max_cpus  = availableCores(),
-        workers   = ceiling(max_cpus * 1.2),
-        timeout   = NULL,
-        hooks     = NULL,
-        reformat  = NULL,
-        stop_id   = NULL,
-        copy_id   = NULL,
+        host     = '0.0.0.0',
+        port     = 8080L,
+        parse    = NULL,
+        globals  = list(),
+        packages = NULL,
+        init     = NULL,
+        max_cpus = availableCores(),
+        workers  = ceiling(max_cpus * 1.2),
+        timeout  = NULL,
+        hooks    = NULL,
+        reformat = NULL,
+        stop_id  = NULL,
+        copy_id  = NULL,
+        bg       = TRUE,
         quiet             = FALSE,
         onHeaders         = NULL,
         staticPaths       = NULL,
@@ -132,43 +137,110 @@ WebQueue <- R6Class(
       
       # Sanity check `handler` and `globals`.
       if (!is.function(handler)) cli_abort('`handler` must be a function, not {.type {handler}}.')
-      if (!is.list(globals))     cli_abort('`globals` must be a list,     not {.type {globals}}.')
+      if (!is.list(globals))     cli_abort('`globals` must be a list, not {.type {globals}}.')
       
       # Custom parsing prior to queue submission.
-      private$parse <- parse
       if (!(is.function(parse) || is.null(parse)))
         cli_abort('`parse` must be a function or NULL, not {.type {parse}}.')
       
       # Create static paths as needed.
-      for (i in seq_along(staticPaths))
-        if (is.character(fp <- staticPaths[[i]]))
-          if (!file.exists(fp) && !dir.exists(fp))
-            dir.create(fp, recursive = TRUE)
+      for (i in seq_along(staticPaths)) {
+        staticPaths[[i]] %<>% normalizePath(winslash = '/', mustWork = FALSE)
+        fp <- staticPaths[[i]]
+        if (!file.exists(fp) && !dir.exists(fp))
+          dir.create(fp, recursive = TRUE)
+      }
       
-      # Start a Queue.
-      private$.jobqueue <- Queue$new(
-        globals   = list(handler = handler, globals = globals),
-        packages  = packages,
-        init      = init,
-        max_cpus  = max_cpus,
-        workers   = workers,
-        timeout   = timeout,
-        hooks     = hooks,
-        reformat  = reformat,
-        signal    = TRUE,
-        stop_id   = stop_id,
-        copy_id   = copy_id )
+      private$.host <- host
+      private$.port <- port
+      private$.url  <- paste0(
+        'http://',
+        ifelse(host == '0.0.0.0', 'localhost', host),
+        ifelse(port == 80L, '', paste0(':', port)) )
       
-      # Start a 'httpuv' http server.
-      private$.httpuv <- startServer(
-        host  = host,
-        port  = port,
-        quiet = quiet,
-        app   = list(
-          call              = private$app_call,
-          onHeaders         = onHeaders,
-          staticPaths       = staticPaths,
-          staticPathOptions = staticPathOptions ))
+      
+      # Launch WebQueue on a different R process
+      if (isTRUE(bg)) {
+        
+        worker <- jobqueue::Worker$new()
+        
+        job <- jobqueue::Job$new(
+          vars = environment(), 
+          expr = {
+            
+            webqueue::WebQueue$new( # nocov start
+              handler  = handler,
+              host     = host,
+              port     = port,
+              parse    = parse,
+              globals  = globals,
+              packages = packages,
+              init     = init,
+              max_cpus = max_cpus,
+              workers  = workers,
+              timeout  = timeout,
+              hooks    = hooks,
+              reformat = reformat,
+              stop_id  = stop_id,
+              copy_id  = copy_id,
+              bg       = FALSE,
+              quiet             = quiet,
+              onHeaders         = onHeaders,
+              staticPaths       = staticPaths,
+              staticPathOptions = staticPathOptions ) # nocov end
+          }
+        )
+        
+        private$worker <- worker$wait()$run(job)
+        
+      } 
+      
+      # Launch WebQueue on this R process
+      else {
+        
+        private$parse <- parse
+        
+        # Start a Queue.
+        private$.jobqueue <- Queue$new(
+          globals  = list(handler = handler, globals = globals),
+          packages = packages,
+          init     = init,
+          max_cpus = max_cpus,
+          workers  = workers,
+          timeout  = timeout,
+          hooks    = hooks,
+          reformat = reformat,
+          signal   = TRUE,
+          stop_id  = stop_id,
+          copy_id  = copy_id )
+        
+        # blocking
+        if (isFALSE(bg)) {
+          
+          private$.httpuv <- runServer( # nocov start
+            host  = host,
+            port  = port,
+            app   = list(
+              call              = private$app_call,
+              onHeaders         = onHeaders,
+              staticPaths       = staticPaths,
+              staticPathOptions = staticPathOptions )) # nocov end
+        }
+        
+        # non-blocking
+        else {
+          
+          private$.httpuv <- startServer(
+            host  = host,
+            port  = port,
+            quiet = quiet,
+            app   = list(
+              call              = private$app_call,
+              onHeaders         = onHeaders,
+              staticPaths       = staticPaths,
+              staticPathOptions = staticPathOptions ))
+        }
+      }
       
       return (self)
     },
@@ -199,8 +271,12 @@ WebQueue <- R6Class(
     
     .jobqueue = NULL,
     .httpuv   = NULL,
+    .host     = NULL,
+    .port     = NULL,
+    .url      = NULL,
     handler   = NULL,
     parse     = NULL,
+    worker    = NULL,
     
     app_call = function (req) {
       
@@ -226,8 +302,14 @@ WebQueue <- R6Class(
     
     
     finalize = function (reason = 'server stopped') {
-      private$.jobqueue$stop(reason)
-      private$.httpuv$stop()
+      
+      if (!is.null(private$worker)) {
+        private$worker$stop()
+      } else {
+        private$.jobqueue$stop(reason)
+        private$.httpuv$stop()
+      }
+      
       invisible()
     }
   ),
@@ -235,39 +317,24 @@ WebQueue <- R6Class(
   active = list(
     
     #' @field jobqueue
-    #' The `jobqueue::Queue`.
+    #' The `jobqueue::Queue` (when `bg = NULL`).
     jobqueue = function () private$.jobqueue,
     
     #' @field httpuv
-    #' The `httpuv::WebServer`.
+    #' The `httpuv::WebServer` (when `bg = NULL`).
     httpuv = function () private$.httpuv,
-    
-    #' @field workers
-    #' List of `jobqueue::Worker`s used by `$jobqueue`.
-    workers = function () private$.jobqueue$workers,
-    
-    #' @field jobs
-    #' List of `jobqueue::Job`s currently in `$jobqueue`.
-    jobs = function () private$.jobqueue$jobs,
     
     #' @field host
     #' Host bound by `$httpuv`.
-    host = function () private$.httpuv$getHost(),
+    host = function () private$.host,
     
     #' @field port
     #' Port bound by `$httpuv`.
-    port = function () private$.httpuv$getPort(),
+    port = function () private$.port,
     
     #' @field url
     #' URL where the server is available.
-    url = function () {
-      host <- self$host
-      port <- self$port
-      paste0(
-        'http://',
-        ifelse(host == '0.0.0.0', 'localhost', host),
-        ifelse(port == 80L, '', paste0(':', port)) )
-    }
+    url = function () private$.url
   )
 )
 
@@ -336,17 +403,18 @@ format_500 <- function (result) {
   #________________________________________________________
   # Convert error object to HTTP status code.
   #________________________________________________________
-  if (is_int(result))                      { status <- result; result <- '' }
-  else if (inherits(result, 'timeout'))    { status <- 408L } # Request Timeout
-  else if (inherits(result, 'superseded')) { status <- 409L } # Conflict
-  else if (inherits(result, 'interrupt'))  { status <- 499L } # Client Closed Request
-  else                                     { status <- 500L } # Internal Server Error
   
-  result <- response(
+  if (is_int(result))                      { status <- result; body <- ''   }
+  else if (inherits(result, 'timeout'))    { status <- 408L; body <- result } # Request Timeout
+  else if (inherits(result, 'superseded')) { status <- 409L; body <- result } # Conflict
+  else if (inherits(result, 'interrupt'))  { status <- 499L; body <- result } # Client Closed Request
+  else                                     { status <- 500L; body <- result } # Internal Server Error
+  
+  resp <- response(
     status = status, 
-    body   = ansi_strip(paste(collapse='\n', as.character(result))) )
+    body   = ansi_strip(paste(collapse='\n', as.character(body))) )
   
-  return (result)
+  return (resp)
 }
 
 

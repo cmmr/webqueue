@@ -29,36 +29,37 @@ pak::pak("cmmr/webqueue")
 ``` r
 library(webqueue)
 
-svr <- WebQueue$new(~{ 'Hello world!' })
+wq <- WebQueue$new(~{ 'Hello world!\n' })
+
+readLines('http://localhost:8080')
+#> [1] "hello world"
+
+wq$stop()
 ```
-
-Visit `http://localhost:8080` with a web browser to see the `'Hello world!'` message.
-
-Shutdown the server afterwards.
-
-``` r
-svr$stop()
-```
-
-
-## Demo
-
-``` r
-svr <- webqueue:::demo()   # triple colon here
-#> Site available at <http://127.0.0.1:8080>
-```
-The demo application's code is available at https://github.com/cmmr/webqueue/blob/main/R/demo.r or by typing `webqueue:::demo`.
 
 
 ## Query Parameters
 
 ``` r
-svr <- WebQueue$new(~{ jsonlite::toJSON(.$ARGS) })
+wq <- WebQueue$new(~{ jsonlite::toJSON(.$ARGS) })
+
+cat(scan('http://localhost:8080?myvar=123', character()))
+#> Read 1 item
+#> {"myvar":["123"]}
+
+wq$stop()
 ```
 
-Visit `http://localhost:8080?myvar=123` to see `'{"myvar":[123]}'`.
-
 Accepts both GET and POST parameters.
+
+
+## Demo
+
+``` r
+wq <- webqueue:::demo()   # triple colon here
+#> Site available at <http://127.0.0.1:8080>
+```
+The demo application's code is available at https://github.com/cmmr/webqueue/blob/main/R/demo.r or by typing `webqueue:::demo`.
 
 
 
@@ -72,14 +73,14 @@ See vignette('interrupts') for more detailed examples.
 ### Set a time limit
 
 ``` r
-slow_hello <- ~{ Sys.sleep(runif(1) * 5); 'Hello' }
+slow_hello <- ~{ Sys.sleep(2.5); 'Hello' }
 
 #                               vvvvvvv
-svr <- WebQueue$new(slow_hello, timeout = 2.5)
+wq <- WebQueue$new(slow_hello, timeout = ~{ runif(1) * 5 })
 ```
 Reload `http://localhost:8080` a few times.
 
-Half the time it'll finish loading, and half the time it'll produce a timeout error.
+Half the time it'll display `'Hello'`, and half the time it'll produce a timeout error.
 
 Use case: prevent user-submitted jobs from excessively hogging compute resources.
 
@@ -88,7 +89,7 @@ Use case: prevent user-submitted jobs from excessively hogging compute resources
 
 ``` r
 #                               vvvvvvv
-svr <- WebQueue$new(slow_hello, copy_id = ~{ .$PATH_INFO })
+wq <- WebQueue$new(slow_hello, copy_id = ~{ .$PATH_INFO })
 ```
 Open several browser tabs for `http://localhost:8080/dup` in quick succession.
 
@@ -100,11 +101,11 @@ Use case: mediate users' spamming of the 'submit' button.
 ### Stop duplicate requests
 ``` r
 #                               vvvvvvv
-svr <- WebQueue$new(slow_hello, stop_id = ~{ .$PATH_INFO })
+wq <- WebQueue$new(slow_hello, stop_id = ~{ .$PATH_INFO })
 ```
 Open several browser tabs for `http://localhost:8080/dup` in quick succession.
 
-Only the first one will finish loading.
+Only the last one will display `'Hello'`, the rest will display an interruption message.
 
 Use case: stop a task that the user no longer needs.
 
@@ -120,7 +121,7 @@ The following code will hang forever:
 
 ``` r
 ## DON'T RUN
-svr <- WebQueue$new(~{ 'Hello world!' })
+wq <- WebQueue$new(~{ 'Hello world!' })
 download.file(url = 'http://localhost:8080', tempfile(), 'auto')
 ```
 

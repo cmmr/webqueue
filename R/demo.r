@@ -160,7 +160,7 @@ demo <- function () { # nocov start
 
   svr <- WebQueue$new(
     handler = handler,
-    host    = '127.0.0.1',
+    host    = '0.0.0.0',
     port    = 8080L,
     timeout = 5,
     hooks   = list(created = hook),
@@ -169,7 +169,7 @@ demo <- function () { # nocov start
     globals = globals,
     workers = 4L )
 
-  cli_text("Site available at {.url http://127.0.0.1:8080}")
+  cli_text("Site available at {.url http://localhost:8080}")
 
   return (svr)
 } # nocov end

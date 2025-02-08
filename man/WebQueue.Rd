@@ -20,13 +20,9 @@ Connects the 'httpuv' and 'jobqueue' R packages.
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{jobqueue}}{The \code{jobqueue::Queue}.}
+\item{\code{jobqueue}}{The \code{jobqueue::Queue} (when \code{bg = NULL}).}
 
-\item{\code{httpuv}}{The \code{httpuv::WebServer}.}
-
-\item{\code{workers}}{List of \code{jobqueue::Worker}s used by \verb{$jobqueue}.}
-
-\item{\code{jobs}}{List of \code{jobqueue::Job}s currently in \verb{$jobqueue}.}
+\item{\code{httpuv}}{The \code{httpuv::WebServer} (when \code{bg = NULL}).}
 
 \item{\code{host}}{Host bound by \verb{$httpuv}.}
 
@@ -65,6 +61,7 @@ Creates an httpuv::WebServer with requests handled by a jobqueue::Queue.
   reformat = NULL,
   stop_id = NULL,
   copy_id = NULL,
+  bg = TRUE,
   quiet = FALSE,
   onHeaders = NULL,
   staticPaths = NULL,
@@ -130,6 +127,10 @@ value is \code{NULL}, no Jobs will be stopped.}
 \item{\code{copy_id}}{A \verb{function (job)}. If two Jobs generate the same value from
 this function, then the later Job will clone its output from the
 earlier Job. If the returned value is \code{NULL}, no Jobs will be cloned.}
+
+\item{\code{bg}}{Where/how to run the server. \code{TRUE}: on a separate R process.
+\code{FALSE}: blocking on the current R process. \code{NULL}: non-blocking on
+the current R process.}
 
 \item{\code{quiet}}{If \code{TRUE}, suppress error messages from starting the 'httpuv'
 server.}

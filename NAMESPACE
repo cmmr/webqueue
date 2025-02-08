@@ -1,6 +1,8 @@
+
+
 importFrom("cli", "ansi_strip", "cli_abort", "cli_text", "style_italic", "col_grey", "style_bold")
-importFrom("httpuv", "startServer", "staticPath", "staticPathOptions", "randomPort")
-importFrom("jobqueue", "Queue", "run_now", "%<>%", "%>%")
+importFrom("httpuv", "randomPort", "runServer", "startServer", "staticPath", "staticPathOptions")
+importFrom("jobqueue", "Queue", "Worker", "Job", "run_now", "%<>%", "%>%")
 importFrom("jsonlite", "fromJSON", "minify", "prettify", "toJSON", "unbox")
 importFrom("parallelly", "availableCores")
 importFrom("promises", "as.promise", "then")
