@@ -7,13 +7,14 @@ test_that("webqueue", {
   
   expect_error(WebQueue$new(handler = NULL, parse = ~{ NULL }, onHeaders = ~{ NULL }))
   expect_error(WebQueue$new(handler = ~{ NULL }, globals = NULL))
+  expect_error(WebQueue$new(handler = ~{ NULL }, globals = list('.wq_handler' = 1)))
   expect_error(WebQueue$new(handler = ~{ NULL }, parse = NA))
   
   
   
   fetch = function (cookies = NULL, post = NULL, query = NULL, path = '') {
     
-    req <- httr2::request(paste0('http://localhost:8080', path))
+    req <- httr2::request(paste0('http://127.0.0.1:8080', path))
     req <- httr2::req_timeout(req, 5L)
     req <- httr2::req_error(req, is_error = function (resp) FALSE)
     
@@ -56,7 +57,7 @@ test_that("webqueue", {
   expect_length(wq$jobqueue$jobs, n = 0)
   expect_identical(wq$host, '0.0.0.0')
   expect_identical(wq$port, 8080L)
-  expect_identical(wq$url, 'http://localhost:8080')
+  expect_identical(wq$url, 'http://127.0.0.1:8080')
   expect_no_error(suppressMessages(wq$print()))
   
   worker <- jobqueue::Worker$new(globals = list(fetch = fetch))
@@ -105,7 +106,7 @@ test_that("webqueue", {
   
   expect_identical(wq$host, '0.0.0.0')
   expect_identical(wq$port, 8080L)
-  expect_identical(wq$url, 'http://localhost:8080')
+  expect_identical(wq$url, 'http://127.0.0.1:8080')
   
   expect_identical(fetch()$body, 'Hello World!')
   expect_identical(fetch(cookies = 'xyz; b=5; txt=1=6')$body, '1=6')
@@ -128,8 +129,17 @@ test_that("webqueue", {
   
   expect_identical(format_500(500L)$status, 500L)
   expect_identical(format_500(errorCondition('x'))$status, 500L)
-  expect_identical(format_500(errorCondition('x', class='timeout'))$status,    408L)
-  expect_identical(format_500(errorCondition('x', class='superseded'))$status, 409L)
-  expect_identical(format_500(errorCondition('x', class='interrupt'))$status,  499L)
+  
+  err_ti <- errorCondition('x', class='timeout')
+  err_su <- errorCondition('x', class='superseded')
+  err_in <- errorCondition('x', class='interrupt')
+  
+  expect_identical(format_500(err_ti)$status, 408L)
+  expect_identical(format_500(err_su)$status, 409L)
+  expect_identical(format_500(err_in)$status, 499L)
+  
+  expect_identical(format_500(rlang::error_cnd(parent = err_ti))$status, 408L)
+  expect_identical(format_500(rlang::error_cnd(parent = err_su))$status, 409L)
+  expect_identical(format_500(rlang::error_cnd(parent = err_in))$status, 499L)
   
 })

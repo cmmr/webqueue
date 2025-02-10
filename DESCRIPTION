@@ -1,8 +1,8 @@
 Package: webqueue
 Type: Package
 Title: HTTP Server Using Multiple CPU Cores
-Version: 0.0.1.9008
-Date: 2025-02-07
+Version: 0.0.1.9009
+Date: 2025-02-10
 Authors@R: c(
     person(
       "Daniel P.", "Smith",
@@ -36,5 +36,7 @@ Imports:
     utils
 Suggests: 
     httr2,
+    parallel,
+    RCurl,
     testthat (>= 3.0.0),
     withr

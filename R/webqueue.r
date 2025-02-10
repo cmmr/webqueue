@@ -8,8 +8,8 @@
 #' Connects the 'httpuv' and 'jobqueue' R packages.
 #' 
 #' 
-#' @param handler  A `function (request, globals)` that will be run on a 
-#'        background worker process. The returned value will be passed through 
+#' @param handler  A `function (request)` that will be run on a background 
+#'        worker process. The returned value will be passed through 
 #'        `reformat`, then sent as the server's response to the web client.
 #' 
 #' @param host   A string that is a valid IPv4 address that is owned by this 
@@ -25,8 +25,8 @@
 #'        environment object provided by 'httpuv', amended with `$ARGS` and 
 #'        `$COOKIES`.
 #' 
-#' @param globals  A list that is stored on the workers and provided as the 
-#'        second argument to `handler`.
+#' @param globals  A list of variables to add to `handler`'s evaluation 
+#'        environment.
 #'        
 #' @param packages  Character vector of package names to load on workers.
 #' 
@@ -138,6 +138,8 @@ WebQueue <- R6Class(
       # Sanity check `handler` and `globals`.
       if (!is.function(handler)) cli_abort('`handler` must be a function, not {.type {handler}}.')
       if (!is.list(globals))     cli_abort('`globals` must be a list, not {.type {globals}}.')
+      for (i in c('.wq_handler', '.wq_request'))
+        if (hasName(globals, i)) cli_abort('`globals` cannot have a {.field {i}} entry.')
       
       # Custom parsing prior to queue submission.
       if (!(is.function(parse) || is.null(parse)))
@@ -155,7 +157,7 @@ WebQueue <- R6Class(
       private$.port <- port
       private$.url  <- paste0(
         'http://',
-        ifelse(host == '0.0.0.0', 'localhost', host),
+        ifelse(host == '0.0.0.0', '127.0.0.1', host),
         ifelse(port == 80L, '', paste0(':', port)) )
       
       
@@ -198,11 +200,12 @@ WebQueue <- R6Class(
       # Launch WebQueue on this R process
       else {
         
-        private$parse <- parse
+        private$parse            <- parse
+        globals[['.wq_handler']] <- handler
         
         # Start a Queue.
-        private$.jobqueue <- Queue$new(
-          globals  = list(handler = handler, globals = globals),
+        private$.jobqueue <- jobqueue::Queue$new(
+          globals  = globals,
           packages = packages,
           init     = init,
           max_cpus = max_cpus,
@@ -212,7 +215,7 @@ WebQueue <- R6Class(
           reformat = reformat,
           signal   = TRUE,
           stop_id  = stop_id,
-          copy_id  = copy_id )
+          copy_id  = copy_id )$wait()
         
         # blocking
         if (isFALSE(bg)) {
@@ -291,8 +294,9 @@ WebQueue <- R6Class(
       if (!is.null(cnd)) return (format_500(cnd))
       
       job <- private$.jobqueue$run(
-        expr = quote(do.call(handler, list(request, globals))),
-        vars = list(request = req) )
+        expr = quote(do.call(.wq_handler, list(.wq_request))),
+        vars = list(.wq_request = req),
+        req  = req )
       
       then(
         promise     = as.promise(job),
@@ -404,17 +408,23 @@ format_500 <- function (result) {
   # Convert error object to HTTP status code.
   #________________________________________________________
   
-  if (is_int(result))                      { status <- result; body <- ''   }
+  body   <- ''
+  parent <- if (hasName(result, 'parent')) result$parent
+  
+  if (is_int(result))                      { status <- result }
   else if (inherits(result, 'timeout'))    { status <- 408L; body <- result } # Request Timeout
+  else if (inherits(parent, 'timeout'))    { status <- 408L; body <- parent } # Request Timeout
   else if (inherits(result, 'superseded')) { status <- 409L; body <- result } # Conflict
+  else if (inherits(parent, 'superseded')) { status <- 409L; body <- parent } # Conflict
   else if (inherits(result, 'interrupt'))  { status <- 499L; body <- result } # Client Closed Request
+  else if (inherits(parent, 'interrupt'))  { status <- 499L; body <- parent } # Client Closed Request
   else                                     { status <- 500L; body <- result } # Internal Server Error
   
-  resp <- response(
+  result <- response(
     status = status, 
     body   = ansi_strip(paste(collapse='\n', as.character(body))) )
   
-  return (resp)
+  return (result)
 }
 
 
@@ -422,7 +432,7 @@ format_500 <- function (result) {
 # hooks <- function (job, queue) {
 #   job$vars$my_str <- function (x) capture.output(ls.str(x[order(names(x))]))
 #   job$expr <- switch(
-#     EXPR = job$vars$req$PATH_INFO,
+#     EXPR = job$req$PATH_INFO,
 #     '/hello'   = quote('Hello World'),
 #     '/date'    = quote(date()),
 #     '/sleep'   = quote({x <- date(); Sys.sleep(5); c(x, date())}),

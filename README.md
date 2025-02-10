@@ -9,7 +9,17 @@
 [![covr](https://codecov.io/gh/cmmr/webqueue/graph/badge.svg)](https://app.codecov.io/gh/cmmr/webqueue)
 <!-- badges: end -->
 
+
 The goal of webqueue is to process HTTP requests on interruptible background processes.
+
+Use cases:
+
+* Prevent user-submitted jobs from excessively hogging compute resources.
+
+* Stop a task that is no longer needed.
+
+* Mediate users' spamming of the 'submit' button.
+
 
 
 ## Installation
@@ -32,7 +42,7 @@ library(webqueue)
 wq <- WebQueue$new(~{ 'Hello world!\n' })
 
 readLines('http://localhost:8080')
-#> [1] "hello world"
+#> [1] "Hello world!"
 
 wq$stop()
 ```
@@ -43,23 +53,13 @@ wq$stop()
 ``` r
 wq <- WebQueue$new(~{ jsonlite::toJSON(.$ARGS) })
 
-cat(scan('http://localhost:8080?myvar=123', character()))
-#> Read 1 item
+cat(RCurl::getURL('http://localhost:8080?myvar=123'))
 #> {"myvar":["123"]}
 
 wq$stop()
 ```
 
 Accepts both GET and POST parameters.
-
-
-## Demo
-
-``` r
-wq <- webqueue:::demo()   # triple colon here
-#> Site available at <http://127.0.0.1:8080>
-```
-The demo application's code is available at https://github.com/cmmr/webqueue/blob/main/R/demo.r or by typing `webqueue:::demo`.
 
 
 
@@ -73,62 +73,70 @@ See vignette('interrupts') for more detailed examples.
 ### Set a time limit
 
 ``` r
-slow_hello <- ~{ Sys.sleep(2.5); 'Hello' }
+wq <- WebQueue$new(
+  handler = ~{ Sys.sleep(.$ARGS$s); 'Hello world!' }, 
+  timeout = 1 )
 
-#                               vvvvvvv
-wq <- WebQueue$new(slow_hello, timeout = ~{ runif(1) * 5 })
+RCurl::getURL('http://localhost:8080?s=2')
+#> [1] "timeout: total runtime exceeded 1 second\n"
+
+RCurl::getURL('http://localhost:8080?s=0')
+#> [1] "Hello world!"
+
+wq$stop()
 ```
-Reload `http://localhost:8080` a few times.
 
-Half the time it'll display `'Hello'`, and half the time it'll produce a timeout error.
-
-Use case: prevent user-submitted jobs from excessively hogging compute resources.
 
 
 ### Merge duplicate requests
 
 ``` r
-#                               vvvvvvv
-wq <- WebQueue$new(slow_hello, copy_id = ~{ .$PATH_INFO })
+wq <- WebQueue$new(
+  handler = function (req, G) { Sys.sleep(1); req$ARGS$x }, 
+  copy_id = function (job) job$req$PATH_INFO )
+# ^^^^^^^   `copy_id` will be '/a' or '/b'
+
+# Fetch two URLs at the same time. '/b' path is merged.
+jq <- jobqueue::Queue$new(workers = 3L)$wait()   # vv
+a1 <- jq$run({ RCurl::getURL('http://localhost:8080/a?x=first') })
+b1 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=second') })
+b2 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=third') })
+
+dput(c(a1 = a1$result, b1 = b1$result, b2 = b2$result))
+#> c(a1 = "first", b1 = "second", b2 = "second")
+
+jq$stop()
+wq$stop()
 ```
-Open several browser tabs for `http://localhost:8080/dup` in quick succession.
-
-They will all finish loading at the exact same time.
-
-Use case: mediate users' spamming of the 'submit' button.
 
 
 ### Stop duplicate requests
 ``` r
-#                               vvvvvvv
-wq <- WebQueue$new(slow_hello, stop_id = ~{ .$PATH_INFO })
+wq <- WebQueue$new(
+  handler = function (req, G) { Sys.sleep(1); req$ARGS$x }, 
+  stop_id = function (job) job$req$PATH_INFO )
+# ^^^^^^^   `stop_id` will be '/a' or '/b'
+
+# Fetch three URLs at the same time. '/b' path is stopped.
+jq <- jobqueue::Queue$new(workers = 3L)$wait()   # vv
+a1 <- jq$run({ RCurl::getURL('http://localhost:8080/a?x=first') })
+b1 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=second') })
+b2 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=third') })
+
+dput(c(a1 = a1$result, b1 = b1$result, b2 = b2$result))
+#> c(a1 = "first", b1 = "superseded: duplicated stop_id\n", b2 = "third")
+
+jq$stop()
+wq$stop()
 ```
-Open several browser tabs for `http://localhost:8080/dup` in quick succession.
-
-Only the last one will display `'Hello'`, the rest will display an interruption message.
-
-Use case: stop a task that the user no longer needs.
 
 
-
-
-## Cautions
-
-### R is single threaded
-
-Do not try to interact with the server from the same R session.
-The following code will hang forever:
+## Demo
 
 ``` r
-## DON'T RUN
-wq <- WebQueue$new(~{ 'Hello world!' })
-download.file(url = 'http://localhost:8080', tempfile(), 'auto')
+wq <- webqueue:::demo()   # triple colon here
+#> Site available at <http://127.0.0.1:8080>
 ```
-
-### Security considerations
-
-As with all web-facing applications, you should take care to 
-guard against remote code execution and other types of attacks.
-
+The demo application's code is available at https://github.com/cmmr/webqueue/blob/main/R/demo.r or by typing `webqueue:::demo`.
 
 

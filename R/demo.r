@@ -154,7 +154,7 @@ demo <- function () { # nocov start
   
   # Ignore requests for a website fav icon.
   hook <- function (job) {
-    if (job$vars$req$PATH_INFO == '/favicon.ico') job$stop(404L)
+    if (job$req$PATH_INFO == '/favicon.ico') job$stop(404L)
   }
 
 
