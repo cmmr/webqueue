@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">webqueue</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1.9008</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1.9009</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,6 +53,12 @@
 <!-- badges: start -->
 
 <p>The goal of webqueue is to process HTTP requests on interruptible background processes.</p>
+<p>Use cases:</p>
+<ul>
+<li><p>Prevent user-submitted jobs from excessively hogging compute resources.</p></li>
+<li><p>Stop a task that is no longer needed.</p></li>
+<li><p>Mediate users’ spamming of the ‘submit’ button.</p></li>
+</ul>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -73,7 +79,7 @@
 <span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">~</span><span class="op">{</span> <span class="st">'Hello world!\n'</span> <span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "hello world"</span></span>
+<span><span class="co">#&gt; [1] "Hello world!"</span></span>
 <span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -83,20 +89,11 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">~</span><span class="op">{</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html" class="external-link">toJSON</a></span><span class="op">(</span><span class="va">.</span><span class="op">$</span><span class="va">ARGS</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/scan.html" class="external-link">scan</a></span><span class="op">(</span><span class="st">'http://localhost:8080?myvar=123'</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Read 1 item</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?myvar=123'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; {"myvar":["123"]}</span></span>
 <span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Accepts both GET and POST parameters.</p>
-</div>
-<div class="section level2">
-<h2 id="demo">Demo<a class="anchor" aria-label="anchor" href="#demo"></a>
-</h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu">webqueue</span><span class="fu">:::</span><span class="fu"><a href="https://rdrr.io/r/utils/demo.html" class="external-link">demo</a></span><span class="op">(</span><span class="op">)</span>   <span class="co"># triple colon here</span></span>
-<span><span class="co">#&gt; Site available at &lt;http://127.0.0.1:8080&gt;</span></span></code></pre></div>
-<p>The demo application’s code is available at <a href="https://github.com/cmmr/webqueue/blob/main/R/demo.r" class="external-link uri">https://github.com/cmmr/webqueue/blob/main/R/demo.r</a> or by typing <code>webqueue:::demo</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="interrupting-requests">Interrupting Requests<a class="anchor" aria-label="anchor" href="#interrupting-requests"></a>
@@ -106,53 +103,69 @@
 <div class="section level3">
 <h3 id="set-a-time-limit">Set a time limit<a class="anchor" aria-label="anchor" href="#set-a-time-limit"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">slow_hello</span> <span class="op">&lt;-</span> <span class="op">~</span><span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">2.5</span><span class="op">)</span>; <span class="st">'Hello'</span> <span class="op">}</span></span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span>  handler <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="va">.</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">s</span><span class="op">)</span>; <span class="st">'Hello world!'</span> <span class="op">}</span>, </span>
+<span>  timeout <span class="op">=</span> <span class="fl">1</span> <span class="op">)</span></span>
 <span></span>
-<span><span class="co">#                               vvvvvvv</span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">slow_hello</span>, timeout <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">*</span> <span class="fl">5</span> <span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<p>Reload <code>http://localhost:8080</code> a few times.</p>
-<p>Half the time it’ll display <code>'Hello'</code>, and half the time it’ll produce a timeout error.</p>
-<p>Use case: prevent user-submitted jobs from excessively hogging compute resources.</p>
+<span><span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=2'</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "timeout: total runtime exceeded 1 second\n"</span></span>
+<span></span>
+<span><span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=0'</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "Hello world!"</span></span>
+<span></span>
+<span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="merge-duplicate-requests">Merge duplicate requests<a class="anchor" aria-label="anchor" href="#merge-duplicate-requests"></a>
 </h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#                               vvvvvvv</span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">slow_hello</span>, copy_id <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="va">.</span><span class="op">$</span><span class="va">PATH_INFO</span> <span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<p>Open several browser tabs for <code>http://localhost:8080/dup</code> in quick succession.</p>
-<p>They will all finish loading at the exact same time.</p>
-<p>Use case: mediate users’ spamming of the ‘submit’ button.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span>  handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">req</span>, <span class="va">G</span><span class="op">)</span> <span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>; <span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">x</span> <span class="op">}</span>, </span>
+<span>  copy_id <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="va">job</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">PATH_INFO</span> <span class="op">)</span></span>
+<span><span class="co"># ^^^^^^^   `copy_id` will be '/a' or '/b'</span></span>
+<span></span>
+<span><span class="co"># Fetch two URLs at the same time. '/b' path is merged.</span></span>
+<span><span class="va">jq</span> <span class="op">&lt;-</span> <span class="fu">jobqueue</span><span class="fu">::</span><span class="va"><a href="https://cmmr.github.io/jobqueue/reference/Queue.html" class="external-link">Queue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span><span class="op">$</span><span class="fu">wait</span><span class="op">(</span><span class="op">)</span>   <span class="co"># vv</span></span>
+<span><span class="va">a1</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080/a?x=first'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">b1</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080/b?x=second'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">b2</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080/b?x=third'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dput.html" class="external-link">dput</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>a1 <span class="op">=</span> <span class="va">a1</span><span class="op">$</span><span class="va">result</span>, b1 <span class="op">=</span> <span class="va">b1</span><span class="op">$</span><span class="va">result</span>, b2 <span class="op">=</span> <span class="va">b2</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; c(a1 = "first", b1 = "second", b2 = "second")</span></span>
+<span></span>
+<span><span class="va">jq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="stop-duplicate-requests">Stop duplicate requests<a class="anchor" aria-label="anchor" href="#stop-duplicate-requests"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#                               vvvvvvv</span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">slow_hello</span>, stop_id <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="va">.</span><span class="op">$</span><span class="va">PATH_INFO</span> <span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<p>Open several browser tabs for <code>http://localhost:8080/dup</code> in quick succession.</p>
-<p>Only the last one will display <code>'Hello'</code>, the rest will display an interruption message.</p>
-<p>Use case: stop a task that the user no longer needs.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span>  handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">req</span>, <span class="va">G</span><span class="op">)</span> <span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>; <span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">x</span> <span class="op">}</span>, </span>
+<span>  stop_id <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="va">job</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">PATH_INFO</span> <span class="op">)</span></span>
+<span><span class="co"># ^^^^^^^   `stop_id` will be '/a' or '/b'</span></span>
+<span></span>
+<span><span class="co"># Fetch three URLs at the same time. '/b' path is stopped.</span></span>
+<span><span class="va">jq</span> <span class="op">&lt;-</span> <span class="fu">jobqueue</span><span class="fu">::</span><span class="va"><a href="https://cmmr.github.io/jobqueue/reference/Queue.html" class="external-link">Queue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span><span class="op">$</span><span class="fu">wait</span><span class="op">(</span><span class="op">)</span>   <span class="co"># vv</span></span>
+<span><span class="va">a1</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080/a?x=first'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">b1</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080/b?x=second'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">b2</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080/b?x=third'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dput.html" class="external-link">dput</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>a1 <span class="op">=</span> <span class="va">a1</span><span class="op">$</span><span class="va">result</span>, b1 <span class="op">=</span> <span class="va">b1</span><span class="op">$</span><span class="va">result</span>, b2 <span class="op">=</span> <span class="va">b2</span><span class="op">$</span><span class="va">result</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; c(a1 = "first", b1 = "superseded: duplicated stop_id\n", b2 = "third")</span></span>
+<span></span>
+<span><span class="va">jq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="cautions">Cautions<a class="anchor" aria-label="anchor" href="#cautions"></a>
+<h2 id="demo">Demo<a class="anchor" aria-label="anchor" href="#demo"></a>
 </h2>
-<div class="section level3">
-<h3 id="r-is-single-threaded">R is single threaded<a class="anchor" aria-label="anchor" href="#r-is-single-threaded"></a>
-</h3>
-<p>Do not try to interact with the server from the same R session. The following code will hang forever:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## DON'T RUN</span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">~</span><span class="op">{</span> <span class="st">'Hello world!'</span> <span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/download.file.html" class="external-link">download.file</a></span><span class="op">(</span>url <span class="op">=</span> <span class="st">'http://localhost:8080'</span>, <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">'auto'</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="security-considerations">Security considerations<a class="anchor" aria-label="anchor" href="#security-considerations"></a>
-</h3>
-<p>As with all web-facing applications, you should take care to guard against remote code execution and other types of attacks.</p>
-</div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu">webqueue</span><span class="fu">:::</span><span class="fu"><a href="https://rdrr.io/r/utils/demo.html" class="external-link">demo</a></span><span class="op">(</span><span class="op">)</span>   <span class="co"># triple colon here</span></span>
+<span><span class="co">#&gt; Site available at &lt;http://127.0.0.1:8080&gt;</span></span></code></pre></div>
+<p>The demo application’s code is available at <a href="https://github.com/cmmr/webqueue/blob/main/R/demo.r" class="external-link uri">https://github.com/cmmr/webqueue/blob/main/R/demo.r</a> or by typing <code>webqueue:::demo</code>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
