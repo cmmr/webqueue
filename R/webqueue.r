@@ -164,13 +164,14 @@ WebQueue <- R6Class(
       # Launch WebQueue on a different R process
       if (isTRUE(bg)) {
         
-        worker <- jobqueue::Worker$new()
+        worker <- jobqueue::Worker$new()$wait()
+        sem    <- semaphore::create_semaphore()
         
         job <- jobqueue::Job$new(
           vars = environment(), 
-          expr = {
+          expr = { # nocov start
             
-            webqueue::WebQueue$new( # nocov start
+            webqueue::WebQueue$new(
               handler  = handler,
               host     = host,
               port     = port,
@@ -189,12 +190,19 @@ WebQueue <- R6Class(
               quiet             = quiet,
               onHeaders         = onHeaders,
               staticPaths       = staticPaths,
-              staticPathOptions = staticPathOptions ) # nocov end
-          }
+              staticPathOptions = staticPathOptions )
+            
+            semaphore::increment_semaphore(sem)
+            
+            httpuv::service(timeoutMs = Inf)
+            
+          } # nocov end
         )
         
-        private$worker <- worker$wait()$run(job)
+        private$worker <- worker$run(job)
         
+        semaphore::decrement_semaphore(sem)
+        semaphore::remove_semaphore(sem)
       } 
       
       # Launch WebQueue on this R process
@@ -204,7 +212,7 @@ WebQueue <- R6Class(
         globals[['.wq_handler']] <- handler
         
         # Start a Queue.
-        private$.jobqueue <- jobqueue::Queue$new(
+        jq <- jobqueue::Queue$new(
           globals  = globals,
           packages = packages,
           init     = init,
@@ -215,34 +223,19 @@ WebQueue <- R6Class(
           reformat = reformat,
           signal   = TRUE,
           stop_id  = stop_id,
-          copy_id  = copy_id )$wait()
+          copy_id  = copy_id )
         
-        # blocking
-        if (isFALSE(bg)) {
-          
-          private$.httpuv <- runServer( # nocov start
-            host  = host,
-            port  = port,
-            app   = list(
-              call              = private$app_call,
-              onHeaders         = onHeaders,
-              staticPaths       = staticPaths,
-              staticPathOptions = staticPathOptions )) # nocov end
-        }
+        private$.httpuv <- httpuv::startServer(
+          host  = host,
+          port  = port,
+          quiet = quiet,
+          app   = list(
+            call              = private$app_call,
+            onHeaders         = onHeaders,
+            staticPaths       = staticPaths,
+            staticPathOptions = staticPathOptions ))
         
-        # non-blocking
-        else {
-          
-          private$.httpuv <- startServer(
-            host  = host,
-            port  = port,
-            quiet = quiet,
-            app   = list(
-              call              = private$app_call,
-              onHeaders         = onHeaders,
-              staticPaths       = staticPaths,
-              staticPathOptions = staticPathOptions ))
-        }
+        private$.jobqueue <- jq$wait()
       }
       
       return (self)
