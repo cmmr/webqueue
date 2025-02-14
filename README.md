@@ -23,7 +23,7 @@ Use cases:
 
 ## Installation
 
-``` r
+```r
 # Install the latest stable version from CRAN:
 install.packages("webqueue")
 
@@ -35,7 +35,7 @@ pak::pak("cmmr/webqueue")
 
 ## Example
 
-``` r
+```r
 library(webqueue)
 
 wq <- WebQueue$new(~{ 'Hello world!\n' })
@@ -49,7 +49,7 @@ wq$stop()
 
 ## Query Parameters
 
-``` r
+```r
 wq <- WebQueue$new(~{ jsonlite::toJSON(.$ARGS) })
 
 cat(RCurl::getURL('http://localhost:8080?myvar=123'))
@@ -71,7 +71,7 @@ See vignette('interrupts') for more detailed examples.
 
 ### Set a time limit
 
-``` r
+```r
 wq <- WebQueue$new(
   handler = ~{ Sys.sleep(.$ARGS$s); 'Hello world!' }, 
   timeout = 1 )
@@ -89,9 +89,9 @@ wq$stop()
 
 ### Merge duplicate requests
 
-``` r
+```r
 wq <- WebQueue$new(
-  handler = function (req, G) { Sys.sleep(1); req$ARGS$x }, 
+  handler = function (req) { Sys.sleep(1); req$ARGS$x }, 
   copy_id = function (job) job$req$PATH_INFO )
 # ^^^^^^^   `copy_id` will be '/a' or '/b'
 
@@ -110,9 +110,9 @@ wq$stop()
 
 
 ### Stop duplicate requests
-``` r
+```r
 wq <- WebQueue$new(
-  handler = function (req, G) { Sys.sleep(1); req$ARGS$x }, 
+  handler = function (req) { Sys.sleep(1); req$ARGS$x }, 
   stop_id = function (job) job$req$PATH_INFO )
 # ^^^^^^^   `stop_id` will be '/a' or '/b'
 
@@ -132,7 +132,7 @@ wq$stop()
 
 ## Demo
 
-``` r
+```r
 wq <- webqueue:::demo()   # triple colon here
 #> Site available at <http://127.0.0.1:8080>
 ```

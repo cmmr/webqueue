@@ -9,11 +9,10 @@ vignette: >
 
 ## Overview
 
-The `handler` function is responsible for transforming a request `req` into a response `resp`.
+The `handler` function is responsible for transforming request `req` into response `resp`.
 
 ```r
 library(webqueue)
-library(httr2)
 
 handler <- function (req) {
   # <request processing code>
@@ -57,25 +56,6 @@ list(
   REQUEST_METHOD = "POST", 
   SERVER_NAME    = "127.0.0.1",     
   SERVER_PORT    = "8080" )
-
-wq <- WebQueue$new(handler = function (req) { capture.output(dput(req[sort(names(req))])) })
-
-httr2::request('http://localhost:8080/dir/file.txt?c=world') |>
-  httr2::req_headers('Cookie' = 'token=abc', 'x-session-id' = 123) |>
-  httr2::req_body_json(list(a=c(1,1,3),b='hello')) |>
-  httr2::req_dry_run()
-      
-  httr2::req_perform() |>
-  httr2::resp_body_string() |>
-  cat()
-  
-  httr2::req_dry_run()
-      
-resp <- list(
-  body   = httr2::resp_body_string(resp),
-  status = httr2::resp_status(resp) )
-
-wq$stop()
 ```
 
 Also good to know:
@@ -97,7 +77,6 @@ wq <- WebQueue$new(handler = ~{ list(r = 2, d = 2) })
 httr2::request('http://localhost:8080') |>
   httr2::req_perform() |>
   httr2::resp_raw()
-
 #> HTTP/1.1 200 OK
 #> Date: Thu, 13 Feb 2025 21:31:44 GMT
 #> Content-Type: application/json; charset=utf-8
@@ -117,7 +96,6 @@ wq <- WebQueue$new(handler = ~{ LETTERS })
 httr2::request('http://localhost:8080') |>
   httr2::req_perform() |>
   httr2::resp_raw()
-
 #> HTTP/1.1 200 OK
 #> Date: Thu, 13 Feb 2025 21:31:44 GMT
 #> Content-Type: text/html; charset=utf-8
@@ -138,7 +116,6 @@ httr2::request('http://localhost:8080') |>
   httr2::req_error(is_error = function (resp) FALSE) |>
   httr2::req_perform() |>
   httr2::resp_raw()
-
 #> HTTP/1.1 404 Not Found
 #> Date: Thu, 13 Feb 2025 21:31:44 GMT
 #> Content-Encoding: gzip
@@ -172,7 +149,6 @@ wq <- WebQueue$new(
 httr2::request('http://localhost:8080') |>
   httr2::req_perform() |>
   httr2::resp_raw()
-
 #> HTTP/1.1 200 OK
 #> Date: Thu, 13 Feb 2025 21:31:44 GMT
 #> Set-Cookie: token=randomstring123
@@ -209,7 +185,6 @@ wq <- WebQueue$new(
 httr2::request('http://localhost:8080') |>
   httr2::req_perform() |>
   httr2::resp_raw()
-
 #> HTTP/1.1 200 OK
 #> Date: Thu, 13 Feb 2025 21:31:44 GMT
 #> Set-Cookie: token=randomstring123
@@ -240,17 +215,23 @@ However, there are opportunities make modifications on the foreground process to
 
 ### Request Parsing
 
+The `parse` function is called on `req` (an environment). Aside from `req$ARGS` and `req$COOKIES`, `req` is exactly as received from httpuv. After this callback, extraneous httpuv fields are removed from `req` to minimize the amount of data sent to the background process.
+
+* Any modifications to `req` are persistent.
+* To stop the request from this callback, use `stop()`.
+* The return value from `parse` is ignored.
+
 ```r
 parse <- local({
   counter <- 1
   function (req) {
-    req$ARGS$counter <- counter
+    req$counter <- counter
     counter <<- counter + 1
   }
 })
 
 wq <- WebQueue$new(
-  handler = function (req) { req$ARGS$counter },
+  handler = function (req) { req$counter },
   parse   = parse )
 
 RCurl::getURL('http://localhost:8080')
@@ -267,6 +248,14 @@ wq$stop()
 
 
 ### Job Hooks
+
+After `parse` is called, the resulting `req` is added to a Job. Callbacks are triggered when the Job enters the `'created'`, `'submitted'`, `'queued'`, and `'starting'` states.
+
+From these hooks you can edit both the `job` and `req` environment objects.
+
+* Any modifications to `job` and `req` are persistent.
+* To stop the request from this callback, use `job$stop()`.
+* The return value from hooks are ignored.
 
 ```r
 hooks <- list()
@@ -297,6 +286,18 @@ wq$stop()
 
 
 ### Response Reformatting
+
+The `reformat` function lets you edit `resp` immediately after it's returned by `handler` (before webqueue and httpuv try to interpret it as an HTTP response).
+
+You can access both the `job` and `req` environments. However, any changes made to `req` by `handler` will not be reflected here.
+
+> **Important**
+> 
+> Do NOT call `job$result` from within the `reformat` function - it will
+> trigger an infinite recursion. Instead, access `job$output`.
+
+* To stop the request from this callback, use `job$stop()`.
+* The return value is used as the new `resp`.
 
 ```r
 reformat <- function (job) {

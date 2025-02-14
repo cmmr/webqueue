@@ -49,14 +49,8 @@ test_that("webqueue", {
     handler     = handler, 
     parse       = parse, 
     bg          = NULL )
-  wq$jobqueue$wait()
   
-  expect_s3_class(wq,              class = c('WebQueue', 'R6'))
-  expect_s3_class(wq$jobqueue,     class = c('Queue', 'R6'))
-  expect_s3_class(wq$httpuv,       class = c('WebServer', 'Server', 'R6'))
-  expect_length(wq$jobqueue$jobs, n = 0)
-  expect_identical(wq$host, '0.0.0.0')
-  expect_identical(wq$port, 8080L)
+  expect_s3_class(wq, class = c('WebQueue', 'R6'))
   expect_identical(wq$url, 'http://127.0.0.1:8080')
   expect_no_error(suppressMessages(wq$print()))
   
@@ -104,8 +98,6 @@ test_that("webqueue", {
     parse       = parse, 
     staticPaths = c('/tmp' = tmp) )
   
-  expect_identical(wq$host, '0.0.0.0')
-  expect_identical(wq$port, 8080L)
   expect_identical(wq$url, 'http://127.0.0.1:8080')
   
   expect_identical(fetch()$body, 'Hello World!')

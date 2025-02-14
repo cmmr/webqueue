@@ -152,9 +152,7 @@ WebQueue <- R6Class(
           dir.create(fp, recursive = TRUE)
       }
       
-      private$.host <- host
-      private$.port <- port
-      private$.url  <- paste0(
+      private$.url <- paste0(
         'http://',
         ifelse(host == '0.0.0.0', '127.0.0.1', host),
         ifelse(port == 80L, '', paste0(':', port)) )
@@ -267,8 +265,6 @@ WebQueue <- R6Class(
     
     .jobqueue = NULL,
     .httpuv   = NULL,
-    .host     = NULL,
-    .port     = NULL,
     .url      = NULL,
     handler   = NULL,
     parse     = NULL,
@@ -277,8 +273,8 @@ WebQueue <- R6Class(
     app_call = function (req) {
       
       cnd <- catch_cnd({
-        req$ARGS    <- parse_args(req)
-        req$COOKIES <- parse_cookies(req)
+        req$ARGS    <- tryCatch(parse_args(req),    error = function (e) list())
+        req$COOKIES <- tryCatch(parse_cookies(req), error = function (e) list())
         if (is.function(private$parse))
           private$parse(req)
         
@@ -321,22 +317,6 @@ WebQueue <- R6Class(
   ),
   
   active = list(
-    
-    #' @field jobqueue
-    #' The `jobqueue::Queue` (when `bg = NULL`).
-    jobqueue = function () private$.jobqueue,
-    
-    #' @field httpuv
-    #' The `httpuv::WebServer` (when `bg = NULL`).
-    httpuv = function () private$.httpuv,
-    
-    #' @field host
-    #' Host bound by `$httpuv`.
-    host = function () private$.host,
-    
-    #' @field port
-    #' Port bound by `$httpuv`.
-    port = function () private$.port,
     
     #' @field url
     #' URL where the server is available.

@@ -20,14 +20,6 @@ Connects the 'httpuv' and 'jobqueue' R packages.
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{jobqueue}}{The \code{jobqueue::Queue} (when \code{bg = NULL}).}
-
-\item{\code{httpuv}}{The \code{httpuv::WebServer} (when \code{bg = NULL}).}
-
-\item{\code{host}}{Host bound by \verb{$httpuv}.}
-
-\item{\code{port}}{Port bound by \verb{$httpuv}.}
-
 \item{\code{url}}{URL where the server is available.}
 }
 \if{html}{\out{</div>}}
