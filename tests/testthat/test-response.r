@@ -15,7 +15,7 @@ test_that("response", {
   resp <- expect_silent(response(body = hdr, status = cke))
   
   expect_identical(resp$status, 200L)
-  expect_null(resp$body)
+  expect_identical(resp$body, 'OK')
   expect_length(resp$headers, 2)
   expect_identical(resp$headers[['Location']],   '/index.html')
   expect_identical(resp$headers[['Set-Cookie']], 'xyz=123; Max-Age=34560000; HttpOnly')

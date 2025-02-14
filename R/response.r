@@ -56,7 +56,7 @@ response <- function (body = NULL, status = 200L, headers = NULL, ...) {
   status <- as.integer(status)
   stopifnot(status >= 100L, status < 600L)
   
-  if (!inherits(body, c('list', 'json', 'character', 'NULL')))
+  if (!inherits(body, c('list', 'json', 'character', 'numeric', 'NULL')))
     cli_abort('`body` must be of class list, character, json, or NULL, not {.type {body}}.')
   
   # Set content-type unless it's already set.
@@ -74,9 +74,10 @@ response <- function (body = NULL, status = 200L, headers = NULL, ...) {
     headers[['Access-Control-Expose-Headers']] <- merged
   }
   
-  if (inherits(body, 'list')) body <- toJSON(body, null = 'null')
-  if (inherits(body, 'json')) body <- as.character(body)
-  body <- if (length(body) > 0) paste0(body, collapse = '') else NULL
+  if (inherits(body, 'list'))               body <- toJSON(body, null = 'null')
+  if (inherits(body, c('json', 'numeric'))) body <- as.character(body)
+  if (length(body) > 0) { body <- paste0(body, collapse = '')         }
+  else                  { body <- code_to_msg[[as.character(status)]] }
   
   resp <- structure(
     .Data = list(body = body, status = status, headers = headers),
@@ -249,6 +250,11 @@ js_obj <- function (x = list()) {
 #' @noRd
 #' @export
 print.response <- function (x, ...) {
+  
+  stopifnot(is.list(x))
+  
+  if (is.null(x$headers))  x$headers <- list()
+  if (!hasName(x, 'body')) x <- c(x, list(body = NULL))
   
   stopifnot(
     is.list(x),

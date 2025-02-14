@@ -1,13 +1,14 @@
 
 
 importFrom("cli", "ansi_strip", "cli_abort", "cli_text", "style_italic", "col_grey", "style_bold")
-importFrom("httpuv", "randomPort", "runServer", "startServer", "staticPath", "staticPathOptions")
+importFrom("httpuv", "randomPort", "startServer", "staticPath", "staticPathOptions")
 importFrom("jobqueue", "Queue", "Worker", "Job", "run_now", "%<>%", "%>%")
 importFrom("jsonlite", "fromJSON", "minify", "prettify", "toJSON", "unbox")
 importFrom("parallelly", "availableCores")
 importFrom("promises", "as.promise", "then")
 importFrom("R6", "R6Class")
-importFrom("rlang", "%||%", "as_function", "catch_cnd", "is_formula")
+importFrom("rlang", "%||%", "as_function", "catch_cnd", "env_unbind", "is_formula")
+importFrom("semaphore", "create_semaphore", "decrement_semaphore", "remove_semaphore")
 importFrom("webutils", "parse_http", "parse_query")
 importFrom("utils", "capture.output", "hasName", "str")
 

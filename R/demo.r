@@ -7,7 +7,7 @@ demo <- function () { # nocov start
   globals <- list(
     
     # HTML template for the website
-    template = function (header, text) {
+    TEMPLATE = function (header, text) {
       paste0('
         <!doctype html>
         <html lang="en">
@@ -44,11 +44,11 @@ demo <- function () { # nocov start
           </body>
         </html>
       ')
-    }, # /template
+    }, # /TEMPLATE
     
     
     # Generate an HTML input form
-    form = function (name, type, value, button, action = NULL) {
+    FORM = function (name, type, value, button, action = NULL) {
       value  <- shQuote(ifelse(is.null(value), '', value))
       method <- ifelse(is.null(action), '', ' method = "POST"')
       action <- ifelse(is.null(action), '', paste0(' action = "', action, '"'))
@@ -59,12 +59,12 @@ demo <- function () { # nocov start
           <input type="submit" value="', button, '">
           </fieldset>
         </form> ')
-    } # /form
+    } # /FORM
   )
 
 
   # Code that gets run on the worker process.
-  handler <- function (req, globals) {
+  handler <- function (req) {
 
     page <- req$PATH_INFO
 
@@ -84,10 +84,10 @@ demo <- function () { # nocov start
         '<table>',
         '<tr>',
         '<td><h4>Using GET:</h4></td>',
-        '<td>', globals$form('name', 'text', req$ARGS$name, 'Greet Me!'), '</td>',
+        '<td>', FORM('name', 'text', req$ARGS$name, 'Greet Me!'), '</td>',
         '</tr><tr>',
         '<td><h4>Using POST:</h4></td>',
-        '<td>', globals$form('name', 'text', req$ARGS$name, 'Greet Me!', '/greet'), '</td>',
+        '<td>', FORM('name', 'text', req$ARGS$name, 'Greet Me!', '/greet'), '</td>',
         '</tr>',
         '</table>',
         '</blockquote>'
@@ -138,7 +138,7 @@ demo <- function () { # nocov start
         'Finished: ', t2,
         '</code></pre>',
         '<hr>',
-        globals$form('wait', 'number', wait, 'Sleep'),
+        FORM('wait', 'number', wait, 'Sleep'),
         'If more than the maximum of 5 seconds, the job will be automatically stopped before finishing.' )
     }
     
@@ -147,7 +147,7 @@ demo <- function () { # nocov start
       text   <- "Select a link above to explore what R's request handler can see and do."
     }
 
-    html <- globals$template(header, text)
+    html <- TEMPLATE(header, text)
     return (html)
   }
 

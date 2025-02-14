@@ -30,7 +30,7 @@ test_that("webqueue", {
     return (resp)
   }
   
-  handler <- function (request, globals) {
+  handler <- function (request) {
     if (!is.null(x <- request$COOKIES$txt)) return (x)
     if (!is.null(x <- request$ARGS$txt))    return (x)
     return ('Hello World!')

@@ -19,11 +19,10 @@
 #'        be listened on. Note that on most Unix-like systems including Linux 
 #'        and macOS, port numbers smaller than 1024 require root privileges.
 #' 
-#' @param parse  A `function (request)` that is run on the foreground process
-#'        to transform the HTTP request prior to passing it to `handler`. Must
-#'        return a `list()`-like object or signal an error. `request` is the 
-#'        environment object provided by 'httpuv', amended with `$ARGS` and 
-#'        `$COOKIES`.
+#' @param parse  A `function (req)` that is run on the foreground process to 
+#'        transform the HTTP request prior to passing it to `handler`. `req` is 
+#'        the environment object provided by 'httpuv', amended with `$ARGS` and 
+#'        `$COOKIES`. Edit `req` in place and/or signal an error.
 #' 
 #' @param globals  A list of variables to add to `handler`'s evaluation 
 #'        environment.
@@ -93,7 +92,7 @@
 #'     if (FALSE) {
 #' 
 #'       svr <- WebQueue$new(
-#'         handler = function (request, globals) 'Hello World!',
+#'         handler = function (request) 'Hello World!',
 #'         host    = '127.0.0.1',
 #'         port    = 8080L )
 #'     }
@@ -164,7 +163,7 @@ WebQueue <- R6Class(
       # Launch WebQueue on a different R process
       if (isTRUE(bg)) {
         
-        worker <- jobqueue::Worker$new()$wait()
+        worker <- jobqueue::Worker$new()
         sem    <- semaphore::create_semaphore()
         
         job <- jobqueue::Job$new(
@@ -223,7 +222,8 @@ WebQueue <- R6Class(
           reformat = reformat,
           signal   = TRUE,
           stop_id  = stop_id,
-          copy_id  = copy_id )
+          copy_id  = copy_id,
+          wait     = FALSE )
         
         private$.httpuv <- httpuv::startServer(
           host  = host,
@@ -235,7 +235,7 @@ WebQueue <- R6Class(
             staticPaths       = staticPaths,
             staticPathOptions = staticPathOptions ))
         
-        private$.jobqueue <- jq$wait()
+        private$.jobqueue <- jq$wait(timeout = 15)
       }
       
       return (self)
@@ -279,10 +279,19 @@ WebQueue <- R6Class(
       cnd <- catch_cnd({
         req$ARGS    <- parse_args(req)
         req$COOKIES <- parse_cookies(req)
-        req$HEADERS <- as.list(req[['HEADERS']])
         if (is.function(private$parse))
-          req <- private$parse(req)
-        req <- as.list(req)
+          private$parse(req)
+        
+        # Exclude extraneous fields from req
+        drop <- c(
+          'httpuv.version', 'rook.errors', 'rook.input', 
+          'rook.url_scheme', 'rook.version', 'SCRIPT_NAME', 
+          'accept', 'accept-encoding', 'content-length', 
+          'cookie', 'CONTENT_LENGTH', 'CONTENT_TYPE', 
+          'REMOTE_PORT', 'SCRIPT_NAME', 'QUERY_STRING', 
+          paste0('HTTP_', gsub('-', '_', toupper(names(req$HEADERS)))) )
+        env_unbind(env = req, nms = drop)
+        req$HEADERS <- req$HEADERS[setdiff(names(req$HEADERS), drop)]
       })
       if (!is.null(cnd)) return (format_500(cnd))
       
@@ -341,20 +350,14 @@ parse_args <- function (req) {
   
   args <- list()
   
-  if (hasName(req, 'REQUEST_METHOD') && isTRUE(nzchar(req[['REQUEST_METHOD']]))) {
-    
-    method <- toupper(req[['REQUEST_METHOD']])
-    
-    if (identical(method, 'GET')) {
-      if (hasName(req, 'QUERY_STRING') && isTRUE(nzchar(req[['QUERY_STRING']])))
-        args <- parse_query(req[['QUERY_STRING']])
-      
-    } else if (identical(method, 'POST')) {
+  if (hasName(req, 'REQUEST_METHOD') && isTRUE(nzchar(req[['REQUEST_METHOD']])))
+    if (identical(toupper(req[['REQUEST_METHOD']]), 'POST'))
       if (hasName(req, 'CONTENT_TYPE') && isTRUE(nzchar(req[['CONTENT_TYPE']])))
         if (is.function(req[['rook.input']]$read))
           args <- parse_http(req[['rook.input']]$read(), req[['CONTENT_TYPE']])
-    }
-  }
+  
+  if (hasName(req, 'QUERY_STRING') && isTRUE(nzchar(req[['QUERY_STRING']])))
+    args <- c(args, parse_query(req[['QUERY_STRING']]))
   
   return (args)
 }
@@ -426,12 +429,11 @@ format_500 <- function (result) {
 #   job$vars$my_str <- function (x) capture.output(ls.str(x[order(names(x))]))
 #   job$expr <- switch(
 #     EXPR = job$req$PATH_INFO,
-#     '/hello'   = quote('Hello World'),
-#     '/date'    = quote(date()),
-#     '/sleep'   = quote({x <- date(); Sys.sleep(5); c(x, date())}),
-#     '/req'     = quote(my_str(req)),
-#     '/headers' = quote(my_str(as.list(req$HEADERS))),
-#     '/query'   = quote(my_str(webutils::parse_query(req$QUERY_STRING))),
+#     '/hello' = quote('Hello World'),
+#     '/date'  = quote(date()),
+#     '/sleep' = quote({x <- date(); Sys.sleep(5); c(x, date())}),
+#     '/req'   = quote(my_str(req)),
+#     '/query' = quote(my_str(webutils::parse_query(req$QUERY_STRING))),
 #     job$expr )
 # }
 

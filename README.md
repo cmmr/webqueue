@@ -16,9 +16,8 @@ Use cases:
 
 * Prevent user-submitted jobs from excessively hogging compute resources.
 
-* Stop a task that is no longer needed.
+* Stop tasks that are no longer needed.
 
-* Mediate users' spamming of the 'submit' button.
 
 
 

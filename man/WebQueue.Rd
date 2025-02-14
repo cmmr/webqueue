@@ -11,7 +11,7 @@ Connects the 'httpuv' and 'jobqueue' R packages.
     if (FALSE) {
 
       svr <- WebQueue$new(
-        handler = function (request, globals) 'Hello World!',
+        handler = function (request) 'Hello World!',
         host    = '127.0.0.1',
         port    = 8080L )
     }
@@ -72,8 +72,8 @@ Creates an httpuv::WebServer with requests handled by a jobqueue::Queue.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{handler}}{A \verb{function (request, globals)} that will be run on a
-background worker process. The returned value will be passed through
+\item{\code{handler}}{A \verb{function (request)} that will be run on a background
+worker process. The returned value will be passed through
 \code{reformat}, then sent as the server's response to the web client.}
 
 \item{\code{host}}{A string that is a valid IPv4 address that is owned by this
@@ -83,14 +83,13 @@ server, or \code{'0.0.0.0'} to listen on all IP addresses.}
 be listened on. Note that on most Unix-like systems including Linux
 and macOS, port numbers smaller than 1024 require root privileges.}
 
-\item{\code{parse}}{A \verb{function (request)} that is run on the foreground process
-to transform the HTTP request prior to passing it to \code{handler}. Must
-return a \code{list()}-like object or signal an error. \code{request} is the
-environment object provided by 'httpuv', amended with \verb{$ARGS} and
-\verb{$COOKIES}.}
+\item{\code{parse}}{A \verb{function (req)} that is run on the foreground process to
+transform the HTTP request prior to passing it to \code{handler}. \code{req} is
+the environment object provided by 'httpuv', amended with \verb{$ARGS} and
+\verb{$COOKIES}. Edit \code{req} in place and/or signal an error.}
 
-\item{\code{globals}}{A list that is stored on the workers and provided as the
-second argument to \code{handler}.}
+\item{\code{globals}}{A list of variables to add to \code{handler}'s evaluation
+environment.}
 
 \item{\code{packages}}{Character vector of package names to load on workers.}
 
