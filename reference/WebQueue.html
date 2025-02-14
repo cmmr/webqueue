@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">webqueue</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1.9010</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1.9011</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -16,6 +16,11 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/handler.html">Handler</a></li>
+    <li><a class="dropdown-item" href="../articles/interrupts.html">Interrupts</a></li>
+  </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/cmmr/webqueue/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -100,8 +105,8 @@
 <div class="section">
 <h4 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>handler</code></dt>
-<dd><p>A <code>function (request, globals)</code> that will be run on a
-background worker process. The returned value will be passed through
+<dd><p>A <code>function (request)</code> that will be run on a background
+worker process. The returned value will be passed through
 <code>reformat</code>, then sent as the server's response to the web client.</p></dd>
 
 
@@ -117,16 +122,15 @@ and macOS, port numbers smaller than 1024 require root privileges.</p></dd>
 
 
 <dt><code>parse</code></dt>
-<dd><p>A <code>function (request)</code> that is run on the foreground process
-to transform the HTTP request prior to passing it to <code>handler</code>. Must
-return a <code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code>-like object or signal an error. <code>request</code> is the
-environment object provided by 'httpuv', amended with <code>$ARGS</code> and
-<code>$COOKIES</code>.</p></dd>
+<dd><p>A <code>function (req)</code> that is run on the foreground process to
+transform the HTTP request prior to passing it to <code>handler</code>. <code>req</code> is
+the environment object provided by 'httpuv', amended with <code>$ARGS</code> and
+<code>$COOKIES</code>. Edit <code>req</code> in place and/or signal an error.</p></dd>
 
 
 <dt><code>globals</code></dt>
-<dd><p>A list that is stored on the workers and provided as the
-second argument to <code>handler</code>.</p></dd>
+<dd><p>A list of variables to add to <code>handler</code>'s evaluation
+environment.</p></dd>
 
 
 <dt><code>packages</code></dt>
@@ -269,7 +273,7 @@ will have their <code>$output</code> set to a object of class <code>&lt;interrup
 <span class="r-in"><span>    <span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span>      <span class="va">svr</span> <span class="op">&lt;-</span> <span class="va">WebQueue</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span></span>
-<span class="r-in"><span>        handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">request</span>, <span class="va">globals</span><span class="op">)</span> <span class="st">'Hello World!'</span>,</span></span>
+<span class="r-in"><span>        handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">request</span><span class="op">)</span> <span class="st">'Hello World!'</span>,</span></span>
 <span class="r-in"><span>        host    <span class="op">=</span> <span class="st">'127.0.0.1'</span>,</span></span>
 <span class="r-in"><span>        port    <span class="op">=</span> <span class="fl">8080L</span> <span class="op">)</span></span></span>
 <span class="r-in"><span>    <span class="op">}</span></span></span>
