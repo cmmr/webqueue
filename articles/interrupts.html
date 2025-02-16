@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">webqueue</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1.9013</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1.9014</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,8 +85,8 @@ one.</li>
 <div class="section level3">
 <h3 id="requests-vs-jobs">Requests vs Jobs<a class="anchor" aria-label="anchor" href="#requests-vs-jobs"></a>
 </h3>
-<p>A request (<code>req</code>) is a <code>list</code> of data sent from
-a web browser to the web server. A <a href="jobqueue::Job">Job</a>
+<p>A request (<code>req</code>) is an environment with the data sent
+from a web browser to the web server. A <a href="jobqueue::Job">Job</a>
 (<code>job</code>) is an R6 object containing a single <code>req</code>
 along with the parameters for processing it.</p>
 <p>Some useful elements of each are:</p>
@@ -124,9 +124,8 @@ along with the parameters for processing it.</p>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">args</span><span class="op">$</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span> <span class="op">(</span><span class="va">args</span><span class="op">$</span><span class="va">x</span><span class="op">)</span>    <span class="co"># return `x` if present</span></span>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span> <span class="op">(</span><span class="st">'hello'</span><span class="op">)</span>                         <span class="co"># default to 'hello'</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>The handler does not have access to <code>job</code>. To interrupt a
-job from within its handler, call <code><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop()</a></code> or
-<code>cli_abort()</code> as usual, or
+<p>To interrupt a job from within <code>handler</code>, call
+<code><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop()</a></code> or <code>cli_abort()</code> as usual, or
 <code>return (webqueue::response())</code> to send a more informative
 message back.</p>
 </div>
@@ -195,8 +194,8 @@ reference page for information on all standard Job states.</p>
 <div class="section level2">
 <h2 id="replacement">Replacement<a class="anchor" aria-label="anchor" href="#replacement"></a>
 </h2>
-<p>Use the <code>stop_id</code> field to only run the most request with
-a given hash.</p>
+<p>Use the <code>stop_id</code> field to only run the most recent
+request with a given hash.</p>
 <p>For instance, if you have a session id (<code>sid</code>) you can use
 that as the request hash.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
