@@ -67,6 +67,9 @@ demo <- function () { # nocov start
   handler <- function (req) {
 
     page <- req$PATH_INFO
+    
+    # For CRAN checks
+    if (FALSE) TEMPLATE <- FORM <- NULL
 
     if (page == '/date') {
       header <- "Curent Date and Time"

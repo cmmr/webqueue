@@ -19,7 +19,7 @@ Interrupts in webqueue fall into three categories:
 
 ### Requests vs Jobs
 
-A request (`req`) is an environment with the data sent from a web browser to the web server. A [Job](jobqueue::Job) (`job`) is an R6 object containing a single `req` along with the parameters for processing it.
+A request (`req`) is an environment with the data sent from a web browser to the web server. A Job (`job`) is a [`jobqueue::Job` R6 object](https://cmmr.github.io/jobqueue/reference/Job.html) containing a single `req` along with the parameters for processing it.
 
 Some useful elements of each are:
 
