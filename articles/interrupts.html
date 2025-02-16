@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">webqueue</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.1.9014</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,7 @@
     <li><a class="dropdown-item" href="../articles/interrupts.html">Interrupts</a></li>
   </ul>
 </li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -86,9 +87,9 @@ one.</li>
 <h3 id="requests-vs-jobs">Requests vs Jobs<a class="anchor" aria-label="anchor" href="#requests-vs-jobs"></a>
 </h3>
 <p>A request (<code>req</code>) is an environment with the data sent
-from a web browser to the web server. A <a href="jobqueue::Job">Job</a>
-(<code>job</code>) is an R6 object containing a single <code>req</code>
-along with the parameters for processing it.</p>
+from a web browser to the web server. A Job (<code>job</code>) is a <a href="https://cmmr.github.io/jobqueue/reference/Job.html" class="external-link"><code>jobqueue::Job</code>
+R6 object</a> containing a single <code>req</code> along with the
+parameters for processing it.</p>
 <p>Some useful elements of each are:</p>
 <table class="table"><tr>
 <td>
