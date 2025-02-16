@@ -62,7 +62,7 @@
 <li><p><a href="#method-WebQueue-stop"><code>WebQueue$stop()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-WebQueue-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
-<p>Creates an httpuv::WebServer with requests handled by a jobqueue::Queue.</p><div class="section">
+<p>Creates an <code><a href="https://rdrr.io/pkg/httpuv/man/WebServer.html" class="external-link">httpuv::WebServer</a></code> with requests handled by a <code><a href="https://cmmr.github.io/jobqueue/reference/Queue.html" class="external-link">jobqueue::Queue</a></code>.</p><div class="section">
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  <span class="va">handler</span>,</span>
@@ -136,9 +136,10 @@ utilization.</p></dd>
 
 
 <dt><code>workers</code></dt>
-<dd><p>How many background Worker processes to start. Set to more
-than <code>max_cpus</code> to enable interrupted workers to be quickly swapped
-out with standby Workers while a replacement Worker boots up.</p></dd>
+<dd><p>How many background <a href="https://cmmr.github.io/jobqueue/reference/Worker.html" class="external-link">jobqueue::Worker</a> processes to start.
+Set to more than <code>max_cpus</code> to enable interrupted workers to be
+quickly swapped out with standby Workers while a replacement Worker
+boots up.</p></dd>
 
 
 <dt><code>timeout</code></dt>
@@ -255,13 +256,12 @@ will have their <code>$output</code> set to a object of class <code>&lt;interrup
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span>    </span></span>
-<span class="r-in"><span>    <span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span>      <span class="va">svr</span> <span class="op">&lt;-</span> <span class="va">WebQueue</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span></span>
-<span class="r-in"><span>        handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">request</span><span class="op">)</span> <span class="st">'Hello World!'</span>,</span></span>
-<span class="r-in"><span>        host    <span class="op">=</span> <span class="st">'127.0.0.1'</span>,</span></span>
-<span class="r-in"><span>        port    <span class="op">=</span> <span class="fl">8080L</span> <span class="op">)</span></span></span>
-<span class="r-in"><span>    <span class="op">}</span></span></span>
+<span class="r-in"><span>    <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cmmr.github.io/webqueue/">webqueue</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span>    </span></span>
+<span class="r-in"><span>    <span class="va">wq</span> <span class="op">&lt;-</span> <span class="va">WebQueue</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="kw">function</span> <span class="op">(</span><span class="va">req</span><span class="op">)</span> <span class="st">'Hello World!\n'</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">wq</span><span class="op">$</span><span class="va">url</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Hello World!"</span>
+<span class="r-in"><span>    <span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
