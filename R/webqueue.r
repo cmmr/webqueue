@@ -1,5 +1,5 @@
 
-#' Sends Web Traffic to Job Queue
+#' Queues and Services HTTP Requests
 #'
 #' @name WebQueue
 #'

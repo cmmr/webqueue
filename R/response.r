@@ -251,11 +251,6 @@ js_obj <- function (x = list()) {
 #' @export
 print.response <- function (x, ...) {
   
-  stopifnot(is.list(x))
-  
-  if (is.null(x$headers))  x$headers <- list()
-  if (!hasName(x, 'body')) x <- c(x, list(body = NULL))
-  
   stopifnot(
     is.list(x),
     length(x) == 3,

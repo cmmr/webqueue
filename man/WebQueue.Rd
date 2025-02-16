@@ -2,7 +2,7 @@
 % Please edit documentation in R/webqueue.r
 \name{WebQueue}
 \alias{WebQueue}
-\title{Sends Web Traffic to Job Queue}
+\title{Queues and Services HTTP Requests}
 \description{
 Connects the 'httpuv' and 'jobqueue' R packages.
 }

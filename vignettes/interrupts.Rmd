@@ -19,7 +19,7 @@ Interrupts in webqueue fall into three categories:
 
 ### Requests vs Jobs
 
-A request (`req`) is a `list` of data sent from a web browser to the web server. A [Job](jobqueue::Job) (`job`) is an R6 object containing a single `req` along with the parameters for processing it.
+A request (`req`) is an environment with the data sent from a web browser to the web server. A [Job](jobqueue::Job) (`job`) is an R6 object containing a single `req` along with the parameters for processing it.
 
 Some useful elements of each are:
 
@@ -57,9 +57,7 @@ handler <- function (req) {
 
 ```
 
-The handler does not have access to `job`. To interrupt a job from within its
-handler, call `stop()` or `cli_abort()` as usual, or 
-`return (webqueue::response())` to send a more informative message back.
+To interrupt a job from within `handler`, call `stop()` or `cli_abort()` as usual, or `return (webqueue::response())` to send a more informative message back.
 
 
 
@@ -132,7 +130,7 @@ wq$stop()
 
 ## Replacement
 
-Use the `stop_id` field to only run the most request with a given hash.
+Use the `stop_id` field to only run the most recent request with a given hash.
 
 For instance, if you have a session id (`sid`) you can use that as the request hash.
 

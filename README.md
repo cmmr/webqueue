@@ -66,7 +66,7 @@ Accepts both GET and POST parameters.
 
 The strength of webqueue is its ability to cleanly abort a request at any point.
 
-See vignette('interrupts') for more detailed examples.
+See `vignette('interrupts')` for more detailed examples.
 
 
 ### Set a time limit
@@ -128,14 +128,4 @@ dput(c(a1 = a1$result, b1 = b1$result, b2 = b2$result))
 jq$stop()
 wq$stop()
 ```
-
-
-## Demo
-
-```r
-wq <- webqueue:::demo()   # triple colon here
-#> Site available at <http://127.0.0.1:8080>
-```
-The demo application's code is available at https://github.com/cmmr/webqueue/blob/main/R/demo.r or by typing `webqueue:::demo`.
-
 

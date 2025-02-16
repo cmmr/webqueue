@@ -9,7 +9,7 @@ vignette: >
 
 ## Overview
 
-The `handler` function is responsible for transforming request `req` into response `resp`.
+The `handler` function is responsible for transforming a request (`req`) into a response (`resp`).
 
 ```r
 library(webqueue)
