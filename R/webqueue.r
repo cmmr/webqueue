@@ -38,9 +38,10 @@
 #'        running Jobs (`sum(cpus)`). Does not enforce limits on actual CPU 
 #'        utilization.
 #' 
-#' @param workers  How many background [Worker] processes to start. Set to more 
-#'        than `max_cpus` to enable interrupted workers to be quickly swapped 
-#'        out with standby Workers while a replacement Worker boots up.
+#' @param workers  How many background [jobqueue::Worker] processes to start. 
+#'        Set to more than `max_cpus` to enable interrupted workers to be 
+#'        quickly swapped out with standby Workers while a replacement Worker 
+#'        boots up.
 #' 
 #' @param timeout  A named numeric vector indicating the maximum number of 
 #'        seconds allowed for each state the job passes through, or 'total' to
@@ -89,13 +90,11 @@
 #' @export
 #' @examples
 #'     
-#'     if (FALSE) {
-#' 
-#'       svr <- WebQueue$new(
-#'         handler = function (request) 'Hello World!',
-#'         host    = '127.0.0.1',
-#'         port    = 8080L )
-#'     }
+#'     library(webqueue)
+#'     
+#'     wq <- WebQueue$new(function (req) 'Hello World!\n')
+#'     readLines(wq$url)
+#'     wq$stop()
 #' 
 
 WebQueue <- R6Class(
@@ -105,7 +104,7 @@ WebQueue <- R6Class(
   public = list(
     
     #' @description
-    #' Creates an httpuv::WebServer with requests handled by a jobqueue::Queue.
+    #' Creates an `httpuv::WebServer` with requests handled by a `jobqueue::Queue`.
     #'
     #' @return A `WebQueue` object.
     initialize = function (
