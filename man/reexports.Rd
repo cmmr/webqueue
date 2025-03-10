@@ -20,9 +20,9 @@ below to see their documentation.
 \describe{
   \item{httpuv}{\code{\link[httpuv]{randomPort}}, \code{\link[httpuv]{staticPath}}, \code{\link[httpuv]{staticPathOptions}}}
 
-  \item{jobqueue}{\code{\link[jobqueue:reexports]{run_now}}}
-
   \item{jsonlite}{\code{\link[jsonlite]{fromJSON}}, \code{\link[jsonlite:fromJSON]{toJSON}}, \code{\link[jsonlite]{unbox}}}
+
+  \item{later}{\code{\link[later]{run_now}}}
 
   \item{parallelly}{\code{\link[parallelly]{availableCores}}}
 }}

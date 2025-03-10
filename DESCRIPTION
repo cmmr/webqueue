@@ -2,7 +2,7 @@ Package: webqueue
 Type: Package
 Title: Multicore HTTP Server
 Version: 1.0.0
-Date: 2025-02-16
+Date: 2025-03-10
 Authors@R: c(
     person(
       "Daniel P.", "Smith",
@@ -29,6 +29,7 @@ Imports:
     httpuv,
     jsonlite,
     jobqueue,
+    later,
     parallelly,
     promises,
     R6,

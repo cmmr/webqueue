@@ -39,6 +39,7 @@ test_that("response", {
   expect_error(response(body = matrix(1:10, nrow = 2)))
   
   resp <- expect_silent(response(404L))
+  resp <- expect_silent(response(ls.str(list(x = 123))))
   
   json <- list(result = rep('A long string of text to break over multiple lines.', 50))
   resp <- expect_silent(response(body = json))

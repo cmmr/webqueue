@@ -9,10 +9,11 @@ test_that("webqueue", {
   expect_error(WebQueue$new(handler = ~{ NULL }, globals = NULL))
   expect_error(WebQueue$new(handler = ~{ NULL }, globals = list('.wq_handler' = 1)))
   expect_error(WebQueue$new(handler = ~{ NULL }, parse = NA))
+  expect_error(WebQueue$new(handler = ~{ NULL }, init = { Sys.sleep(10) }, timeout = c(starting = 1)))
   
   
   
-  fetch = function (cookies = NULL, post = NULL, query = NULL, path = '') {
+  fetch <- function (cookies = NULL, post = NULL, query = NULL, path = '') {
     
     req <- httr2::request(paste0('http://127.0.0.1:8080', path))
     req <- httr2::req_timeout(req, 5L)
@@ -46,9 +47,10 @@ test_that("webqueue", {
   # Foreground process
   
   wq  <- WebQueue$new(
-    handler     = handler, 
-    parse       = parse, 
-    bg          = NULL )
+    handler = handler, 
+    parse   = parse, 
+    workers = 1L, 
+    bg      = FALSE )
   
   expect_s3_class(wq, class = c('WebQueue', 'R6'))
   expect_identical(wq$url, 'http://127.0.0.1:8080')
@@ -96,6 +98,7 @@ test_that("webqueue", {
   wq  <- WebQueue$new(
     handler     = handler, 
     parse       = parse, 
+    workers     = 1L, 
     staticPaths = c('/tmp' = tmp) )
   
   expect_identical(wq$url, 'http://127.0.0.1:8080')
@@ -134,4 +137,9 @@ test_that("webqueue", {
   expect_identical(format_500(rlang::error_cnd(parent = err_su))$status, 409L)
   expect_identical(format_500(rlang::error_cnd(parent = err_in))$status, 499L)
   
+  
+  skip_on_covr()
+  
+  expect_error(WebQueue$new(handler = ~{ NULL }, init = { stop('blah') }))
+  expect_error(WebQueue$new(handler = ~{ NULL }, init = { q(save = 'no') }))
 })

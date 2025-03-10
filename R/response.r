@@ -41,8 +41,8 @@
 response <- function (body = NULL, status = 200L, headers = NULL, ...) {
   
   headers <- c(as.list(headers), ...)
-  if (inherits(status, 'header')) { headers <- c(status, headers); status <- 200L }
-  if (inherits(body,   'header')) { headers <- c(body,   headers); body   <- NULL }
+  if (inherits(status, 'wq_header')) { headers <- c(status, headers); status <- 200L }
+  if (inherits(body,   'wq_header')) { headers <- c(body,   headers); body   <- NULL }
   
   for (i in seq_along(headers)) {
     headers[[i]] <- as.character(headers[[i]])
@@ -56,7 +56,7 @@ response <- function (body = NULL, status = 200L, headers = NULL, ...) {
   status <- as.integer(status)
   stopifnot(status >= 100L, status < 600L)
   
-  if (!inherits(body, c('list', 'json', 'character', 'numeric', 'NULL')))
+  if (!inherits(body, c('list', 'json', 'character', 'numeric', 'NULL', 'ls_str')))
     cli_abort('`body` must be of class list, character, json, or NULL, not {.type {body}}.')
   
   # Set content-type unless it's already set.
@@ -74,6 +74,7 @@ response <- function (body = NULL, status = 200L, headers = NULL, ...) {
     headers[['Access-Control-Expose-Headers']] <- merged
   }
   
+  if (inherits(body, 'ls_str'))             body <- paste(capture.output(body), collapse = '\n')
   if (inherits(body, 'list'))               body <- toJSON(body, null = 'null')
   if (inherits(body, c('json', 'numeric'))) body <- as.character(body)
   if (length(body) > 0) { body <- paste0(body, collapse = '')         }
@@ -81,7 +82,7 @@ response <- function (body = NULL, status = 200L, headers = NULL, ...) {
   
   resp <- structure(
     .Data = list(body = body, status = status, headers = headers),
-    class = c('response', 'AsIs') )
+    class = c('wq_response', 'AsIs') )
   
   return (resp)
 }
@@ -132,7 +133,7 @@ header <- function (..., expose = FALSE, name = ...names(), value = ..1) {
   if (isTRUE(expose))
     hdr <- c(hdr, list('Access-Control-Expose-Headers' = header_name))
   
-  class(hdr) <- 'header'
+  class(hdr) <- 'wq_header'
   return (hdr)
   
 }
@@ -249,7 +250,7 @@ js_obj <- function (x = list()) {
 #' 
 #' @noRd
 #' @export
-print.response <- function (x, ...) {
+print.wq_response <- function (x, ...) {
   
   stopifnot(
     is.list(x),
@@ -306,7 +307,7 @@ print.response <- function (x, ...) {
 #' 
 #' @noRd
 #' @export
-print.header <- function (x, ...) {
+print.wq_header <- function (x, ...) {
   for (i in seq_along(x))
     cat(names(x)[[i]], ': ', x[[i]], '\n', sep = '')
 }

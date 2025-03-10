@@ -18,7 +18,7 @@ jsonlite::toJSON
 jsonlite::unbox
 
 #' @export
-jobqueue::run_now
+later::run_now
 
 #' @export
 parallelly::availableCores

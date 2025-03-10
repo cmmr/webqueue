@@ -22,17 +22,20 @@
 #' @param parse  A `function (req)` that is run on the foreground process to 
 #'        transform the HTTP request prior to passing it to `handler`. `req` is 
 #'        the environment object provided by 'httpuv', amended with `$ARGS` and 
-#'        `$COOKIES`. Edit `req` in place and/or signal an error.
+#'        `$COOKIES`. Return value is used as `req` going forward.
 #' 
 #' @param globals  A list of variables to add to `handler`'s evaluation 
 #'        environment.
 #'        
 #' @param packages  Character vector of package names to load on workers.
 #' 
+#' @param namespace  The name of a package to attach to the worker's 
+#'        environment.
+#' 
 #' @param init  A call or R expression wrapped in curly braces to evaluate on 
 #'        each worker just once, immediately after start-up. Will have access 
-#'        to variables defined by `globals` and assets from `packages`. 
-#'        Returned value is ignored.
+#'        to variables defined by `globals` and assets from `packages` and 
+#'        `namespace`. Returned value is ignored.
 #' 
 #' @param max_cpus  Total number of CPU cores that can be reserved by all 
 #'        running Jobs (`sum(cpus)`). Does not enforce limits on actual CPU 
@@ -109,24 +112,29 @@ WebQueue <- R6Class(
     #' @return A `WebQueue` object.
     initialize = function (
         handler,
-        host     = '0.0.0.0',
-        port     = 8080L,
-        parse    = NULL,
-        globals  = list(),
-        packages = NULL,
-        init     = NULL,
-        max_cpus = availableCores(),
-        workers  = ceiling(max_cpus * 1.2),
-        timeout  = NULL,
-        hooks    = NULL,
-        reformat = NULL,
-        stop_id  = NULL,
-        copy_id  = NULL,
-        bg       = TRUE,
+        host      = '0.0.0.0',
+        port      = 8080L,
+        parse     = NULL,
+        globals   = list(),
+        packages  = NULL,
+        namespace = NULL,
+        init      = NULL,
+        max_cpus  = availableCores(),
+        workers   = ceiling(max_cpus * 1.2),
+        timeout   = NULL,
+        hooks     = NULL,
+        reformat  = NULL,
+        stop_id   = NULL,
+        copy_id   = NULL,
+        bg        = TRUE,
         quiet             = FALSE,
         onHeaders         = NULL,
         staticPaths       = NULL,
         staticPathOptions = NULL ) {
+      
+      # Capture curly-brace expression
+      init_subst <- substitute(init)
+      if (isa(init_subst, '{')) init <- init_subst
       
       # Convert lambda syntax to functions.
       if (is_formula(handler))   handler   <- as_function(handler)
@@ -151,38 +159,36 @@ WebQueue <- R6Class(
           dir.create(fp, recursive = TRUE)
       }
       
-      private$.url <- paste0(
-        'http://',
-        ifelse(host == '0.0.0.0', '127.0.0.1', host),
-        ifelse(port == 80L, '', paste0(':', port)) )
-      
       
       # Launch WebQueue on a different R process
       if (isTRUE(bg)) {
         
-        worker <- jobqueue::Worker$new()
-        sem    <- semaphore::create_semaphore()
+        worker  <- jobqueue::Worker$new()
+        sem     <- create_semaphore()
+        start_t <- Sys.time()
         
         job <- jobqueue::Job$new(
           vars = environment(), 
           expr = { # nocov start
             
+            # signals an error if unable to start
             webqueue::WebQueue$new(
-              handler  = handler,
-              host     = host,
-              port     = port,
-              parse    = parse,
-              globals  = globals,
-              packages = packages,
-              init     = init,
-              max_cpus = max_cpus,
-              workers  = workers,
-              timeout  = timeout,
-              hooks    = hooks,
-              reformat = reformat,
-              stop_id  = stop_id,
-              copy_id  = copy_id,
-              bg       = FALSE,
+              handler   = handler,
+              host      = host,
+              port      = port,
+              parse     = parse,
+              globals   = globals,
+              packages  = packages,
+              namespace = namespace,
+              init      = init,
+              max_cpus  = max_cpus,
+              workers   = workers,
+              timeout   = timeout,
+              hooks     = hooks,
+              reformat  = reformat,
+              stop_id   = stop_id,
+              copy_id   = copy_id,
+              bg        = FALSE,
               quiet             = quiet,
               onHeaders         = onHeaders,
               staticPaths       = staticPaths,
@@ -197,8 +203,26 @@ WebQueue <- R6Class(
         
         private$worker <- worker$run(job)
         
-        semaphore::decrement_semaphore(sem)
-        semaphore::remove_semaphore(sem)
+        
+        cnd <- catch_cnd({
+          
+          while (!decrement_semaphore(sem, wait = FALSE)) {
+            
+            if (job$is_done) {
+              output <- job$output
+              if (inherits(output, 'error')) cnd_signal(output)
+              cli_abort('Unable to start WebQueue')  #nocov
+            }
+            
+            later::run_now(timeoutSecs = 0.5)
+          }
+          
+        })
+        
+        if (!is.null(cnd)) worker$stop()
+        remove_semaphore(sem)
+        if (!is.null(cnd)) cnd_signal(cnd)
+        
       } 
       
       # Launch WebQueue on this R process
@@ -207,33 +231,57 @@ WebQueue <- R6Class(
         private$parse            <- parse
         globals[['.wq_handler']] <- handler
         
-        # Start a Queue.
-        jq <- jobqueue::Queue$new(
-          globals  = globals,
-          packages = packages,
-          init     = init,
-          max_cpus = max_cpus,
-          workers  = workers,
-          timeout  = timeout,
-          hooks    = hooks,
-          reformat = reformat,
-          signal   = TRUE,
-          stop_id  = stop_id,
-          copy_id  = copy_id,
-          wait     = FALSE )
+        cnd <- catch_cnd({
         
-        private$.httpuv <- httpuv::startServer(
-          host  = host,
-          port  = port,
-          quiet = quiet,
-          app   = list(
-            call              = private$app_call,
-            onHeaders         = onHeaders,
-            staticPaths       = staticPaths,
-            staticPathOptions = staticPathOptions ))
+          # Start a Queue.
+          private$.jobqueue <- jobqueue::Queue$new(
+            globals   = globals,
+            packages  = packages,
+            namespace = namespace,
+            init      = init,
+            max_cpus  = max_cpus,
+            workers   = workers,
+            timeout   = timeout,
+            hooks     = hooks,
+            reformat  = reformat,
+            signal    = TRUE,
+            stop_id   = stop_id,
+            copy_id   = copy_id )
+          
+          later::run_now()
+          if (!identical(private$.jobqueue$state, 'idle'))
+            stop('Unable to start jobqueue::Queue')  #nocov
+          
+            
+          # Start a Server.
+          private$.httpuv <- httpuv::startServer(
+            host  = host,
+            port  = port,
+            quiet = quiet,
+            app   = list(
+              call              = private$app_call,
+              onHeaders         = onHeaders,
+              staticPaths       = staticPaths,
+              staticPathOptions = staticPathOptions ))
+          
+          later::run_now()
+          if (!isTRUE(private$.httpuv$isRunning()))
+            stop('Unable to start httpuv')  #nocov
+          
+        })
         
-        private$.jobqueue <- jq$wait(timeout = 15)
+        if (inherits(cnd, 'error')) {
+          self$stop()      #nocov
+          cnd_signal(cnd)  #nocov
+        }
+        
       }
+      
+      
+      private$.url <- paste0(
+        'http://',
+        ifelse(host == '0.0.0.0', '127.0.0.1', host),
+        ifelse(port == 80L, '', paste0(':', port)) )
       
       return (self)
     },
@@ -272,10 +320,13 @@ WebQueue <- R6Class(
     app_call = function (req) {
       
       cnd <- catch_cnd({
+        
         req$ARGS    <- tryCatch(parse_args(req),    error = function (e) list())
         req$COOKIES <- tryCatch(parse_cookies(req), error = function (e) list())
+        req$HEADERS <- js_obj(req$HEADERS)
+        
         if (is.function(private$parse))
-          private$parse(req)
+          stopifnot(is_environment(req <- private$parse(req)))
         
         # Exclude extraneous fields from req
         drop <- c(
@@ -287,11 +338,12 @@ WebQueue <- R6Class(
           paste0('HTTP_', gsub('-', '_', toupper(names(req$HEADERS)))) )
         env_unbind(env = req, nms = drop)
         req$HEADERS <- req$HEADERS[setdiff(names(req$HEADERS), drop)]
+          
       })
       if (!is.null(cnd)) return (format_500(cnd))
       
       job <- private$.jobqueue$run(
-        expr = quote(do.call(.wq_handler, list(.wq_request))),
+        expr = quote(.wq_handler(.wq_request)),
         vars = list(.wq_request = req),
         req  = req )
       
@@ -307,8 +359,8 @@ WebQueue <- R6Class(
       if (!is.null(private$worker)) {
         private$worker$stop()
       } else {
-        private$.jobqueue$stop(reason)
-        private$.httpuv$stop()
+        if (!is.null(jq  <- private$.jobqueue)) jq$stop(reason)
+        if (!is.null(svr <- private$.httpuv))   svr$stop()
       }
       
       invisible()
@@ -320,6 +372,7 @@ WebQueue <- R6Class(
     #' @field url
     #' URL where the server is available.
     url = function () private$.url
+    
   )
 )
 
@@ -327,7 +380,7 @@ WebQueue <- R6Class(
 
 parse_args <- function (req) {
   
-  args <- list()
+  args <- js_obj()
   
   if (hasName(req, 'REQUEST_METHOD') && isTRUE(nzchar(req[['REQUEST_METHOD']])))
     if (identical(toupper(req[['REQUEST_METHOD']]), 'POST'))
@@ -344,7 +397,7 @@ parse_args <- function (req) {
 
 parse_cookies <- function (req) {
   
-  cookies <- list()
+  cookies <- js_obj()
   
   if (hasName(req, 'HTTP_COOKIE') && isTRUE(nzchar(req[['HTTP_COOKIE']]))) {
     for (cookie in strsplit(req[['HTTP_COOKIE']], ";", fixed = TRUE)[[1]]) {

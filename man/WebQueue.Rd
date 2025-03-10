@@ -43,6 +43,7 @@ Creates an \code{httpuv::WebServer} with requests handled by a \code{jobqueue::Q
   parse = NULL,
   globals = list(),
   packages = NULL,
+  namespace = NULL,
   init = NULL,
   max_cpus = availableCores(),
   workers = ceiling(max_cpus * 1.2),
@@ -76,17 +77,20 @@ and macOS, port numbers smaller than 1024 require root privileges.}
 \item{\code{parse}}{A \verb{function (req)} that is run on the foreground process to
 transform the HTTP request prior to passing it to \code{handler}. \code{req} is
 the environment object provided by 'httpuv', amended with \verb{$ARGS} and
-\verb{$COOKIES}. Edit \code{req} in place and/or signal an error.}
+\verb{$COOKIES}. Return value is used as \code{req} going forward.}
 
 \item{\code{globals}}{A list of variables to add to \code{handler}'s evaluation
 environment.}
 
 \item{\code{packages}}{Character vector of package names to load on workers.}
 
+\item{\code{namespace}}{The name of a package to attach to the worker's
+environment.}
+
 \item{\code{init}}{A call or R expression wrapped in curly braces to evaluate on
 each worker just once, immediately after start-up. Will have access
-to variables defined by \code{globals} and assets from \code{packages}.
-Returned value is ignored.}
+to variables defined by \code{globals} and assets from \code{packages} and
+\code{namespace}. Returned value is ignored.}
 
 \item{\code{max_cpus}}{Total number of CPU cores that can be reserved by all
 running Jobs (\code{sum(cpus)}). Does not enforce limits on actual CPU
