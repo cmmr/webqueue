@@ -103,6 +103,39 @@
 <p>Accepts both GET and POST parameters.</p>
 </div>
 <div class="section level2">
+<h2 id="simple-api">Simple API<a class="anchor" aria-label="anchor" href="#simple-api"></a>
+</h2>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span>  handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">req</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw"><a href="https://rdrr.io/r/base/switch.html" class="external-link">switch</a></span><span class="op">(</span></span>
+<span>      EXPR <span class="op">=</span> <span class="va">req</span><span class="op">$</span><span class="va">PATH_INFO</span>,</span>
+<span>      <span class="st">'/date'</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/date.html" class="external-link">date</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>      <span class="st">'/req'</span>  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/utils/ls_str.html" class="external-link">ls.str</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">req</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>      <span class="st">'/args'</span> <span class="op">=</span> <span class="va">req</span><span class="op">$</span><span class="va">ARGS</span>,</span>
+<span>      <span class="st">'/cpus'</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu">parallelly</span><span class="fu">::</span><span class="fu"><a href="https://parallelly.futureverse.org/reference/availableCores.html" class="external-link">availableCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>      <span class="fl">404L</span> <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080/cpus'</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; 6</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080/req?x=123&amp;id=ABC'</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ARGS : List of 2</span></span>
+<span><span class="co">#&gt;  $ x : chr "123"</span></span>
+<span><span class="co">#&gt;  $ id: chr "ABC"</span></span>
+<span><span class="co">#&gt; COOKIES :  Named list()</span></span>
+<span><span class="co">#&gt; HEADERS : List of 1</span></span>
+<span><span class="co">#&gt;  $ host: chr "localhost:8080"</span></span>
+<span><span class="co">#&gt; PATH_INFO :  chr "/req"</span></span>
+<span><span class="co">#&gt; REMOTE_ADDR :  chr "127.0.0.1"</span></span>
+<span><span class="co">#&gt; REQUEST_METHOD :  chr "GET"</span></span>
+<span><span class="co">#&gt; SERVER_NAME :  chr "127.0.0.1"</span></span>
+<span><span class="co">#&gt; SERVER_PORT :  chr "8080"</span></span>
+<span></span>
+<span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="interrupting-requests">Interrupting Requests<a class="anchor" aria-label="anchor" href="#interrupting-requests"></a>
 </h2>
 <p>The strength of webqueue is its ability to cleanly abort a request at any point.</p>
@@ -110,7 +143,7 @@
 <div class="section level3">
 <h3 id="set-a-time-limit">Set a time limit<a class="anchor" aria-label="anchor" href="#set-a-time-limit"></a>
 </h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  handler <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="va">.</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">s</span><span class="op">)</span>; <span class="st">'Hello world!'</span> <span class="op">}</span>, </span>
 <span>  timeout <span class="op">=</span> <span class="fl">1</span> <span class="op">)</span></span>
@@ -126,7 +159,7 @@
 <div class="section level3">
 <h3 id="merge-duplicate-requests">Merge duplicate requests<a class="anchor" aria-label="anchor" href="#merge-duplicate-requests"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">req</span><span class="op">)</span> <span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>; <span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">x</span> <span class="op">}</span>, </span>
 <span>  copy_id <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="va">job</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">PATH_INFO</span> <span class="op">)</span></span>
@@ -147,7 +180,7 @@
 <div class="section level3">
 <h3 id="stop-duplicate-requests">Stop duplicate requests<a class="anchor" aria-label="anchor" href="#stop-duplicate-requests"></a>
 </h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">req</span><span class="op">)</span> <span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>; <span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">x</span> <span class="op">}</span>, </span>
 <span>  stop_id <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="va">job</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">PATH_INFO</span> <span class="op">)</span></span>

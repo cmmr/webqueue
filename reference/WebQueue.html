@@ -71,6 +71,7 @@
 <span>  parse <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  globals <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  packages <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  namespace <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  init <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  max_cpus <span class="op">=</span> <span class="fu"><a href="https://parallelly.futureverse.org/reference/availableCores.html" class="external-link">availableCores</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  workers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">ceiling</a></span><span class="op">(</span><span class="va">max_cpus</span> <span class="op">*</span> <span class="fl">1.2</span><span class="op">)</span>,</span>
@@ -110,7 +111,7 @@ and macOS, port numbers smaller than 1024 require root privileges.</p></dd>
 <dd><p>A <code>function (req)</code> that is run on the foreground process to
 transform the HTTP request prior to passing it to <code>handler</code>. <code>req</code> is
 the environment object provided by 'httpuv', amended with <code>$ARGS</code> and
-<code>$COOKIES</code>. Edit <code>req</code> in place and/or signal an error.</p></dd>
+<code>$COOKIES</code>. Return value is used as <code>req</code> going forward.</p></dd>
 
 
 <dt><code>globals</code></dt>
@@ -122,11 +123,16 @@ environment.</p></dd>
 <dd><p>Character vector of package names to load on workers.</p></dd>
 
 
+<dt><code>namespace</code></dt>
+<dd><p>The name of a package to attach to the worker's
+environment.</p></dd>
+
+
 <dt><code>init</code></dt>
 <dd><p>A call or R expression wrapped in curly braces to evaluate on
 each worker just once, immediately after start-up. Will have access
-to variables defined by <code>globals</code> and assets from <code>packages</code>.
-Returned value is ignored.</p></dd>
+to variables defined by <code>globals</code> and assets from <code>packages</code> and
+<code>namespace</code>. Returned value is ignored.</p></dd>
 
 
 <dt><code>max_cpus</code></dt>
