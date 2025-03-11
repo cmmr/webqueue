@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   handler: handler.html
   interrupts: interrupts.html
-last_built: 2025-03-10T18:41Z
+last_built: 2025-03-11T20:13Z
 urls:
   reference: https://cmmr.github.io/webqueue/reference
   article: https://cmmr.github.io/webqueue/articles
