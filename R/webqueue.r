@@ -211,7 +211,7 @@ WebQueue <- R6Class(
             if (job$is_done) {
               output <- job$output
               if (inherits(output, 'error')) cnd_signal(output)
-              cli_abort('Unable to start WebQueue')  #nocov
+              cli_abort('Unable to start WebQueue')  # nocov
             }
             
             later::run_now(timeoutSecs = 0.5)
@@ -250,7 +250,7 @@ WebQueue <- R6Class(
           
           later::run_now()
           if (!identical(private$.jobqueue$state, 'idle'))
-            stop('Unable to start jobqueue::Queue')  #nocov
+            stop('Unable to start jobqueue::Queue')  # nocov
           
             
           # Start a Server.
@@ -266,13 +266,13 @@ WebQueue <- R6Class(
           
           later::run_now()
           if (!isTRUE(private$.httpuv$isRunning()))
-            stop('Unable to start httpuv')  #nocov
+            stop('Unable to start httpuv')  # nocov
           
         })
         
         if (inherits(cnd, 'error')) {
-          self$stop()      #nocov
-          cnd_signal(cnd)  #nocov
+          self$stop()      # nocov
+          cnd_signal(cnd)  # nocov
         }
         
       }

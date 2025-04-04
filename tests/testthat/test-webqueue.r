@@ -1,5 +1,8 @@
 test_that("webqueue", {
   
+  skip_on_cran()
+  
+  
   # library(testthat); library(webqueue)
   
   withr::local_envvar(CURL_SSL_BACKEND = NA)
