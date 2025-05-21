@@ -61,7 +61,7 @@ to variables defined by \code{globals} and assets from \code{packages} and
 running Jobs (\code{sum(cpus)}). Does not enforce limits on actual CPU
 utilization.}
 
-\item{workers}{How many background \link[jobqueue:Worker]{jobqueue::Worker} processes to start.
+\item{workers}{How many background worker processes to start.
 Set to more than \code{max_cpus} to enable interrupted workers to be
 quickly swapped out with standby Workers while a replacement Worker
 boots up.}
@@ -129,11 +129,12 @@ will have their \verb{$output} set to a object of class \verb{<interrupt/conditi
 Connects the 'httpuv' and 'jobqueue' R packages.
 }
 \examples{
+\dontshow{if (! jobqueue:::is_cran_check()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
     
     library(webqueue)
     
     wq <- webqueue(function (req) 'Hello World!\n')
     readLines(wq$url)
     wq$stop()
-
+\dontshow{\}) # examplesIf}
 }

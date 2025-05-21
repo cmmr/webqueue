@@ -39,7 +39,7 @@
 #'        running Jobs (`sum(cpus)`). Does not enforce limits on actual CPU 
 #'        utilization.
 #' 
-#' @param workers  How many background [jobqueue::Worker] processes to start. 
+#' @param workers  How many background worker processes to start. 
 #'        Set to more than `max_cpus` to enable interrupted workers to be 
 #'        quickly swapped out with standby Workers while a replacement Worker 
 #'        boots up.
