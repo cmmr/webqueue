@@ -124,7 +124,7 @@ utilization.</p></dd>
 
 
 <dt id="arg-workers">workers<a class="anchor" aria-label="anchor" href="#arg-workers"></a></dt>
-<dd><p>How many background jobqueue::Worker processes to start.
+<dd><p>How many background worker processes to start.
 Set to more than <code>max_cpus</code> to enable interrupted workers to be
 quickly swapped out with standby Workers while a replacement Worker
 boots up.</p></dd>
@@ -213,7 +213,6 @@ will have their <code>$output</code> set to a object of class <code>&lt;interrup
 <span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">wq</span><span class="op">$</span><span class="va">url</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Hello World!"</span>
 <span class="r-in"><span>    <span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
