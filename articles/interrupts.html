@@ -8,7 +8,7 @@
 <title>Interrupts • webqueue</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Noto_Sans-0.4.9/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Noto_Sans-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">webqueue</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -138,7 +138,7 @@ message back.</p>
 </h3>
 <p>Let’s start by limiting all Jobs to 1 second.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">handler</span>, timeout <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, timeout <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "hello"</span></span>
@@ -165,7 +165,7 @@ to how long a job can spend waiting in the queue.</p>
 <p>See the <a href="https://cmmr.github.io/jobqueue/reference/Job.html#arguments-2" class="external-link">jobqueue::Job</a>
 reference page for information on all standard Job states.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">handler</span>, timeout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>queued <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, timeout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>queued <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=3'</span><span class="op">)</span>  <span class="co"># spends 3 seconds in 'running' state</span></span>
 <span><span class="co">#&gt; [1] "hello"</span></span>
@@ -181,7 +181,7 @@ reference page for information on all standard Job states.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">job</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">PATH_INFO</span> <span class="op">==</span> <span class="st">'/compute'</span>, <span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">handler</span>, timeout <span class="op">=</span> <span class="va">timeout</span><span class="op">)</span></span>
+<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, timeout <span class="op">=</span> <span class="va">timeout</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080/compute?s=3'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "hello"</span></span>
@@ -202,10 +202,10 @@ that as the request hash.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stop_id</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="op">{</span> <span class="va">job</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">sid</span> <span class="op">}</span></span>
 <span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">handler</span>, stop_id <span class="op">=</span> <span class="va">stop_id</span><span class="op">)</span></span>
+<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, stop_id <span class="op">=</span> <span class="va">stop_id</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Fetch three URLs at the same time.</span></span>
-<span><span class="va">jq</span> <span class="op">&lt;-</span> <span class="fu">jobqueue</span><span class="fu">::</span><span class="va"><a href="https://cmmr.github.io/jobqueue/reference/Queue.html" class="external-link">Queue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
+<span><span class="va">jq</span> <span class="op">&lt;-</span> <span class="fu">jobqueue</span><span class="fu">::</span><span class="fu"><a href="https://cmmr.github.io/jobqueue/reference/jobqueue.html" class="external-link">jobqueue</a></span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
 <span><span class="va">r1</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?sid=1&amp;s=1&amp;x=first'</span><span class="op">)</span>  <span class="op">}</span><span class="op">)</span></span>
 <span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?sid=1&amp;s=1&amp;x=second'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
 <span><span class="va">r3</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?sid=1&amp;s=1&amp;x=third'</span><span class="op">)</span>  <span class="op">}</span><span class="op">)</span></span>
@@ -244,32 +244,33 @@ the Job and request, and call <code>job$stop()</code> as needed.</p>
 <span>    <span class="va">job</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'Unauthorized IP Address:'</span>, <span class="va">ip</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">handler</span>, hooks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>created <span class="op">=</span> <span class="va">ip_check</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, hooks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>created <span class="op">=</span> <span class="va">ip_check</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "interrupt: Unauthorized IP Address: 127.0.0.1\n"</span></span>
 <span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Note: in reality, you’d want to use
-<code>webqueue::WebQueue$new(onHeaders)</code> to do this particular
-task more efficiently.</p>
+<code>webqueue::webqueue(onHeaders)</code> to do this particular task
+more efficiently.</p>
 </div>
 <div class="section level3">
-<h3 id="queue-limit">Queue Limit<a class="anchor" aria-label="anchor" href="#queue-limit"></a>
+<h3 id="limit-concurrency">Limit Concurrency<a class="anchor" aria-label="anchor" href="#limit-concurrency"></a>
 </h3>
-<p>Once the job is assigned to a Queue, you can access the list of all
-jobs that are currently queued or running.</p>
-<p>Here, we’ll refuse to add more than 2 jobs to the queue at once.</p>
+<p>Once the job is assigned to a <code>jobqueue</code>, you can access
+the list of all jobs that are currently queued or running.</p>
+<p>Here, we’ll refuse to add more than 2 jobs to the
+<code>jobqueue</code> at once.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qlimit</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">job</span><span class="op">$</span><span class="va">queue</span><span class="op">$</span><span class="va">jobs</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
-<span>    <span class="va">job</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="st">'Queue is too full.'</span><span class="op">)</span></span>
+<span>    <span class="va">job</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="st">'Too many concurrent jobs.'</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">handler</span>, hooks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>queued <span class="op">=</span> <span class="va">qlimit</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, hooks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>queued <span class="op">=</span> <span class="va">qlimit</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Fetch three URLs at the same time.</span></span>
-<span><span class="va">jq</span> <span class="op">&lt;-</span> <span class="fu">jobqueue</span><span class="fu">::</span><span class="va"><a href="https://cmmr.github.io/jobqueue/reference/Queue.html" class="external-link">Queue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
+<span><span class="va">jq</span> <span class="op">&lt;-</span> <span class="fu">jobqueue</span><span class="fu">::</span><span class="fu"><a href="https://cmmr.github.io/jobqueue/reference/jobqueue.html" class="external-link">jobqueue</a></span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
 <span><span class="va">r1</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=1'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
 <span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=1'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
 <span><span class="va">r3</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=1'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
@@ -281,7 +282,7 @@ jobs that are currently queued or running.</p>
 <span><span class="co">#&gt; [1] "hello"</span></span>
 <span></span>
 <span><span class="va">r3</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt; [1] "interrupt: Queue is too full.\n"</span></span>
+<span><span class="co">#&gt; [1] "interrupt: Too many concurrent jobs.\n"</span></span>
 <span></span>
 <span><span class="va">jq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -304,10 +305,10 @@ jobs that are currently queued or running.</p>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">handler</span>, hooks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>queued <span class="op">=</span> <span class="va">stop_user</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, hooks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>queued <span class="op">=</span> <span class="va">stop_user</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Fetch three URLs at the same time.</span></span>
-<span><span class="va">jq</span> <span class="op">&lt;-</span> <span class="fu">jobqueue</span><span class="fu">::</span><span class="va"><a href="https://cmmr.github.io/jobqueue/reference/Queue.html" class="external-link">Queue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
+<span><span class="va">jq</span> <span class="op">&lt;-</span> <span class="fu">jobqueue</span><span class="fu">::</span><span class="fu"><a href="https://cmmr.github.io/jobqueue/reference/jobqueue.html" class="external-link">jobqueue</a></span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
 <span><span class="va">r1</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?u=1&amp;s=10'</span><span class="op">)</span>   <span class="op">}</span><span class="op">)</span></span>
 <span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?u=1&amp;s=10'</span><span class="op">)</span>   <span class="op">}</span><span class="op">)</span></span>
 <span><span class="va">r3</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?u=2&amp;stop=1'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
@@ -336,7 +337,7 @@ jobs that are currently queued or running.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
     </footer>

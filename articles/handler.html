@@ -8,7 +8,7 @@
 <title>Handler • webqueue</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Noto_Sans-0.4.9/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Noto_Sans-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">webqueue</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -129,7 +129,7 @@ Content-Length: 25
 <h4 id="a-list-will-be-encoded-as-json-">A list will be encoded as JSON.<a class="anchor" aria-label="anchor" href="#a-list-will-be-encoded-as-json-"></a>
 </h4>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>handler <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>r <span class="op">=</span> <span class="fl">2</span>, d <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span>handler <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>r <span class="op">=</span> <span class="fl">2</span>, d <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html" class="external-link">request</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html" class="external-link">req_perform</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -148,7 +148,7 @@ Content-Length: 25
 <h4 id="a-character-vector-will-be-concatenated-together-">A character vector will be concatenated together.<a class="anchor" aria-label="anchor" href="#a-character-vector-will-be-concatenated-together-"></a>
 </h4>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>handler <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="va">LETTERS</span> <span class="op">}</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span>handler <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="va">LETTERS</span> <span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html" class="external-link">request</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/req_perform.html" class="external-link">req_perform</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -167,7 +167,7 @@ Content-Length: 25
 <h4 id="an-integer-will-be-interpreted-as-an-http-status-code-">An integer will be interpreted as an HTTP status code.<a class="anchor" aria-label="anchor" href="#an-integer-will-be-interpreted-as-an-http-status-code-"></a>
 </h4>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>handler <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="fl">404L</span> <span class="op">}</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span>handler <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="fl">404L</span> <span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html" class="external-link">request</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/req_error.html" class="external-link">req_error</a></span><span class="op">(</span>is_error <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">resp</span><span class="op">)</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -196,7 +196,7 @@ Either call them with the <code>webqueue::</code> prefix, or create a
 WebQueue with <code>packages = 'webqueue'</code>.</p>
 </blockquote>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span></span>
 <span>  packages <span class="op">=</span> <span class="st">'webqueue'</span>,</span>
 <span>  handler  <span class="op">=</span> <span class="op">~</span><span class="op">{</span></span>
 <span>    <span class="va">body</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>data <span class="op">=</span> <span class="fu"><a href="../reference/js_obj.html">js_obj</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -231,7 +231,7 @@ of the expected <code>list(status, headers, body)</code> object.
 Although it says <code>body = NULL</code> is fine, I have found that to
 not be the case.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span></span>
 <span>  handler  <span class="op">=</span> <span class="op">~</span><span class="op">{</span></span>
 <span>    <span class="va">status</span>  <span class="op">&lt;-</span> <span class="fl">200L</span></span>
 <span>    <span class="va">body</span>    <span class="op">&lt;-</span> <span class="st">'{"data":{}}'</span></span>
@@ -299,7 +299,7 @@ process.</p>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span></span>
 <span>  handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">req</span><span class="op">)</span> <span class="op">{</span> <span class="va">req</span><span class="op">$</span><span class="va">counter</span> <span class="op">}</span>,</span>
 <span>  parse   <span class="op">=</span> <span class="va">parse</span> <span class="op">)</span></span>
 <span></span>
@@ -336,17 +336,17 @@ persistent.</li>
 <span><span class="co"># Request received</span></span>
 <span><span class="va">hooks</span><span class="op">$</span><span class="va">created</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="op">{</span> <span class="va">job</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">}</span></span>
 <span></span>
-<span><span class="co"># Submitted to the Queue</span></span>
+<span><span class="co"># Submitted to the `jobqueue`</span></span>
 <span><span class="va">hooks</span><span class="op">$</span><span class="va">submitted</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="op">{</span> <span class="va">job</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="op">}</span></span>
 <span></span>
-<span><span class="co"># Accepted by the Queue</span></span>
+<span><span class="co"># Accepted by the `jobqueue`</span></span>
 <span><span class="va">hooks</span><span class="op">$</span><span class="va">queued</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="op">{</span> <span class="va">job</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">c</span> <span class="op">&lt;-</span> <span class="fl">3</span> <span class="op">}</span></span>
 <span></span>
 <span><span class="co"># Last chance to edit</span></span>
 <span><span class="va">hooks</span><span class="op">$</span><span class="va">starting</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="op">{</span> <span class="va">job</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fl">4</span> <span class="op">}</span></span>
 <span></span>
 <span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span></span>
 <span>  handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">req</span><span class="op">)</span> <span class="op">{</span> <span class="va">req</span><span class="op">$</span><span class="va">ARGS</span> <span class="op">}</span>,</span>
 <span>  hooks   <span class="op">=</span> <span class="va">hooks</span> <span class="op">)</span></span>
 <span></span>
@@ -380,7 +380,7 @@ Instead, access <code>job$output</code>.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'&lt;h1&gt;'</span>, <span class="va">job</span><span class="op">$</span><span class="va">output</span>, <span class="st">'&lt;/h1&gt;'</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/WebQueue.html">WebQueue</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span></span>
 <span>  handler  <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="st">'Hello'</span> <span class="op">}</span>,</span>
 <span>  reformat <span class="op">=</span> <span class="va">reformat</span> <span class="op">)</span></span>
 <span></span>
@@ -401,7 +401,7 @@ Instead, access <code>job$output</code>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
     </footer>
