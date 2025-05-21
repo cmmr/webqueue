@@ -161,7 +161,7 @@ demo <- function () { # nocov start
   }
 
 
-  svr <- WebQueue$new(
+  svr <- webqueue(
     handler = handler,
     host    = '0.0.0.0',
     port    = 8080L,

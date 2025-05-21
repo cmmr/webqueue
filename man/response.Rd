@@ -24,7 +24,7 @@ A \verb{<response/AsIs>} object. Essentially a list with elements named
 \code{body}, \code{status}, and \code{headers} formatted as 'httpuv' expects.
 }
 \description{
-If your WebQueue's \code{handler} function returns a list, json object, character
+If your webqueue's \code{handler} function returns a list, json object, character
 vector, or scalar integer, \code{response()} will be used to transform that
 result into an HTTP response.\cr\cr
 You may also call \code{response()} within your handler to better customize the

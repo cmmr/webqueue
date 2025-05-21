@@ -72,7 +72,7 @@ Also good to know:
 #### A list will be encoded as JSON.
 
 ```r
-wq <- WebQueue$new(handler = ~{ list(r = 2, d = 2) })
+wq <- webqueue(handler = ~{ list(r = 2, d = 2) })
 
 httr2::request('http://localhost:8080') |>
   httr2::req_perform() |>
@@ -91,7 +91,7 @@ wq$stop()
 #### A character vector will be concatenated together.
 
 ```r
-wq <- WebQueue$new(handler = ~{ LETTERS })
+wq <- webqueue(handler = ~{ LETTERS })
 
 httr2::request('http://localhost:8080') |>
   httr2::req_perform() |>
@@ -110,7 +110,7 @@ wq$stop()
 #### An integer will be interpreted as an HTTP status code.
 
 ```r
-wq <- WebQueue$new(handler = ~{ 404L })
+wq <- webqueue(handler = ~{ 404L })
 
 httr2::request('http://localhost:8080') |>
   httr2::req_error(is_error = function (resp) FALSE) |>
@@ -137,7 +137,7 @@ To construct more complex HTTP response, use the `response()`, `header()`, `cook
 > These functions will not be in the handler's environment by default. Either call them with the `webqueue::` prefix, or create a WebQueue with `packages = 'webqueue'`.
 
 ```r
-wq <- WebQueue$new(
+wq <- webqueue(
   packages = 'webqueue',
   handler  = ~{
     body  <- list(data = js_obj(list()))
@@ -170,7 +170,7 @@ wq$stop()
 To bypass webqueue's response formatting, wrap your response in `I()` to indicate it should be passed on to httpuv as-is. See the help page for `httpuv::startServer()` for a description of the expected `list(status, headers, body)` object. Although it says `body = NULL` is fine, I have found that to not be the case.
 
 ```r
-wq <- WebQueue$new(
+wq <- webqueue(
   handler  = ~{
     status  <- 200L
     body    <- '{"data":{}}'
@@ -230,7 +230,7 @@ parse <- local({
   }
 })
 
-wq <- WebQueue$new(
+wq <- webqueue(
   handler = function (req) { req$counter },
   parse   = parse )
 
@@ -263,17 +263,17 @@ hooks <- list()
 # Request received
 hooks$created <- function (job) { job$req$ARGS$a <- 1 }
 
-# Submitted to the Queue
+# Submitted to the `jobqueue`
 hooks$submitted <- function (job) { job$req$ARGS$b <- 2 }
 
-# Accepted by the Queue
+# Accepted by the `jobqueue`
 hooks$queued <- function (job) { job$req$ARGS$c <- 3 }
 
 # Last chance to edit
 hooks$starting <- function (job) { job$req$ARGS$d <- 4 }
 
 
-wq <- WebQueue$new(
+wq <- webqueue(
   handler = function (req) { req$ARGS },
   hooks   = hooks )
 
@@ -304,7 +304,7 @@ reformat <- function (job) {
   paste0('<h1>', job$output, '</h1>')
 }
 
-wq <- WebQueue$new(
+wq <- webqueue(
   handler  = ~{ 'Hello' },
   reformat = reformat )
 

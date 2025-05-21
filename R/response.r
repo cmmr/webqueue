@@ -1,7 +1,7 @@
 
 #' Compile an HTTP response.
 #' 
-#' If your WebQueue's `handler` function returns a list, json object, character
+#' If your webqueue's `handler` function returns a list, json object, character
 #' vector, or scalar integer, `response()` will be used to transform that 
 #' result into an HTTP response.\cr\cr
 #' You may also call `response()` within your handler to better customize the 

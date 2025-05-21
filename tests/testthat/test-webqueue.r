@@ -8,11 +8,12 @@ test_that("webqueue", {
   withr::local_envvar(CURL_SSL_BACKEND = NA)
   
   
-  expect_error(WebQueue$new(handler = NULL, parse = ~{ NULL }, onHeaders = ~{ NULL }))
-  expect_error(WebQueue$new(handler = ~{ NULL }, globals = NULL))
-  expect_error(WebQueue$new(handler = ~{ NULL }, globals = list('.wq_handler' = 1)))
-  expect_error(WebQueue$new(handler = ~{ NULL }, parse = NA))
-  expect_error(WebQueue$new(handler = ~{ NULL }, init = { Sys.sleep(10) }, timeout = c(starting = 1)))
+  expect_error(webqueue(handler = NULL, parse = ~{ NULL }, onHeaders = ~{ NULL }))
+  expect_error(webqueue(handler = ~{ NULL }, globals = NULL))
+  expect_error(webqueue(handler = ~{ NULL }, globals = list('.wq_handler' = 1)))
+  expect_error(webqueue(handler = ~{ NULL }, parse = NA))
+  expect_error(webqueue(handler = ~{ NULL }, init = { Sys.sleep(10) }, timeout = c(starting = 1)))
+  expect_error(webqueue_class$new(handler = ~{ NULL }, init = { Sys.sleep(10) }, timeout = c(starting = 1)))
   
   
   
@@ -49,7 +50,7 @@ test_that("webqueue", {
   
   # Foreground process
   
-  wq  <- WebQueue$new(
+  wq  <- webqueue(
     handler = handler, 
     parse   = parse, 
     workers = 1L, 
@@ -59,34 +60,34 @@ test_that("webqueue", {
   expect_identical(wq$url, 'http://127.0.0.1:8080')
   expect_no_error(suppressMessages(wq$print()))
   
-  worker <- jobqueue::Worker$new(globals = list(fetch = fetch))
+  worker <- jobqueue::worker_class$new(globals = list(fetch = fetch))
   worker$wait()
   
-  job <- jobqueue::Job$new({ fetch() })
+  job <- jobqueue::job_class$new({ fetch() })
   worker$run(job)
   expect_identical(job$result$body, 'Hello World!')
   
-  job <- jobqueue::Job$new({ fetch(cookies = 'xyz; b=5; txt=1=6') })
+  job <- jobqueue::job_class$new({ fetch(cookies = 'xyz; b=5; txt=1=6') })
   worker$run(job)
   expect_identical(job$result$body, '1=6')
   
-  job <- jobqueue::Job$new({ fetch(query = list(txt='ABC')) })
+  job <- jobqueue::job_class$new({ fetch(query = list(txt='ABC')) })
   worker$run(job)
   expect_identical(job$result$body, 'ABC')
   
-  job <- jobqueue::Job$new({ fetch(post = list(txt='XYZ')) })
+  job <- jobqueue::job_class$new({ fetch(post = list(txt='XYZ')) })
   worker$run(job)
   expect_identical(job$result$body, 'XYZ')
   
-  job <- jobqueue::Job$new({ fetch(post = list(err='timeout')) })
+  job <- jobqueue::job_class$new({ fetch(post = list(err='timeout')) })
   worker$run(job)
   expect_identical(job$result$status, 408L)
   
-  job <- jobqueue::Job$new({ fetch(post = list(err='superseded')) })
+  job <- jobqueue::job_class$new({ fetch(post = list(err='superseded')) })
   worker$run(job)
   expect_identical(job$result$status, 409L)
   
-  job <- jobqueue::Job$new({ fetch(post = list(err='interrupt')) })
+  job <- jobqueue::job_class$new({ fetch(post = list(err='interrupt')) })
   worker$run(job)
   expect_identical(job$result$status, 499L)
   
@@ -98,7 +99,7 @@ test_that("webqueue", {
   # Background process.
   
   tmp <- tempfile()
-  wq  <- WebQueue$new(
+  wq  <- webqueue(
     handler     = handler, 
     parse       = parse, 
     workers     = 1L, 
@@ -143,6 +144,6 @@ test_that("webqueue", {
   
   skip_on_covr()
   
-  expect_error(WebQueue$new(handler = ~{ NULL }, init = { stop('blah') }))
-  expect_error(WebQueue$new(handler = ~{ NULL }, init = { q(save = 'no') }))
+  expect_error(webqueue(handler = ~{ NULL }, init = { stop('blah') }))
+  expect_error(webqueue(handler = ~{ NULL }, init = { q(save = 'no') }))
 })

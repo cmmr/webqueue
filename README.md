@@ -38,7 +38,7 @@ pak::pak("cmmr/webqueue")
 ```r
 library(webqueue)
 
-wq <- WebQueue$new(~{ 'Hello world!\n' })
+wq <- webqueue(~{ 'Hello world!\n' })
 
 readLines('http://localhost:8080')
 #> [1] "Hello world!"
@@ -50,7 +50,7 @@ wq$stop()
 ## Query Parameters
 
 ```r
-wq <- WebQueue$new(~{ jsonlite::toJSON(.$ARGS) })
+wq <- webqueue(~{ jsonlite::toJSON(.$ARGS) })
 
 cat(RCurl::getURL('http://localhost:8080?myvar=123'))
 #> {"myvar":["123"]}
@@ -64,7 +64,7 @@ Accepts both GET and POST parameters.
 ## Simple API
 
 ```r
-wq <- WebQueue$new(
+wq <- webqueue(
   handler = function (req) {
     switch(
       EXPR = req$PATH_INFO,
@@ -106,7 +106,7 @@ See `vignette('interrupts')` for more detailed examples.
 ### Set a time limit
 
 ```r
-wq <- WebQueue$new(
+wq <- webqueue(
   handler = ~{ Sys.sleep(.$ARGS$s); 'Hello world!' }, 
   timeout = 1 )
 
@@ -124,13 +124,13 @@ wq$stop()
 ### Merge duplicate requests
 
 ```r
-wq <- WebQueue$new(
+wq <- webqueue(
   handler = function (req) { Sys.sleep(1); req$ARGS$x }, 
   copy_id = function (job) job$req$PATH_INFO )
 # ^^^^^^^   `copy_id` will be '/a' or '/b'
 
 # Fetch two URLs at the same time. '/b' path is merged.
-jq <- jobqueue::Queue$new(workers = 3L)$wait()   # vv
+jq <- jobqueue::jobqueue(workers = 3L)$wait()    # vv
 a1 <- jq$run({ RCurl::getURL('http://localhost:8080/a?x=first') })
 b1 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=second') })
 b2 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=third') })
@@ -145,13 +145,13 @@ wq$stop()
 
 ### Stop duplicate requests
 ```r
-wq <- WebQueue$new(
+wq <- webqueue(
   handler = function (req) { Sys.sleep(1); req$ARGS$x }, 
   stop_id = function (job) job$req$PATH_INFO )
 # ^^^^^^^   `stop_id` will be '/a' or '/b'
 
 # Fetch three URLs at the same time. '/b' path is stopped.
-jq <- jobqueue::Queue$new(workers = 3L)$wait()   # vv
+jq <- jobqueue::jobqueue(workers = 3L)$wait()    # vv
 a1 <- jq$run({ RCurl::getURL('http://localhost:8080/a?x=first') })
 b1 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=second') })
 b2 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=third') })

@@ -69,7 +69,7 @@ To interrupt a job from within `handler`, call `stop()` or `cli_abort()` as usua
 Let's start by limiting all Jobs to 1 second.
 
 ```r
-wq <- WebQueue$new(handler, timeout = 1)
+wq <- webqueue(handler, timeout = 1)
 
 getURL('http://localhost:8080')
 #> [1] "hello"
@@ -97,7 +97,7 @@ See the [jobqueue::Job](https://cmmr.github.io/jobqueue/reference/Job.html#argum
 reference page for information on all standard Job states.
 
 ```r
-wq <- WebQueue$new(handler, timeout = c(queued = 1))
+wq <- webqueue(handler, timeout = c(queued = 1))
 
 getURL('http://localhost:8080?s=3')  # spends 3 seconds in 'running' state
 #> [1] "hello"
@@ -115,7 +115,7 @@ timeout <- function (job) {
   ifelse(job$req$PATH_INFO == '/compute', 5, 1)
 }
 
-wq <- WebQueue$new(handler, timeout = timeout)
+wq <- webqueue(handler, timeout = timeout)
 
 getURL('http://localhost:8080/compute?s=3')
 #> [1] "hello"
@@ -138,10 +138,10 @@ For instance, if you have a session id (`sid`) you can use that as the request h
 ```r
 stop_id <- function (job) { job$req$ARGS$sid }
 
-wq <- WebQueue$new(handler, stop_id = stop_id)
+wq <- webqueue(handler, stop_id = stop_id)
 
 # Fetch three URLs at the same time.
-jq <- jobqueue::Queue$new(workers = 3L)
+jq <- jobqueue::jobqueue(workers = 3L)
 r1 <- jq$run({ RCurl::getURL('http://localhost:8080?sid=1&s=1&x=first')  })
 r2 <- jq$run({ RCurl::getURL('http://localhost:8080?sid=1&s=1&x=second') })
 r3 <- jq$run({ RCurl::getURL('http://localhost:8080?sid=1&s=1&x=third')  })
@@ -184,7 +184,7 @@ ip_check <- function (job) {
     job$stop(paste('Unauthorized IP Address:', ip))
 }
 
-wq <- WebQueue$new(handler, hooks = list(created = ip_check))
+wq <- webqueue(handler, hooks = list(created = ip_check))
 
 getURL('http://localhost:8080')
 #> [1] "interrupt: Unauthorized IP Address: 127.0.0.1\n"
@@ -192,27 +192,27 @@ getURL('http://localhost:8080')
 wq$stop()
 ```
 
-Note: in reality, you'd want to use `webqueue::WebQueue$new(onHeaders)` to do 
+Note: in reality, you'd want to use `webqueue::webqueue(onHeaders)` to do 
 this particular task more efficiently.
 
 
-### Queue Limit
+### Limit Concurrency
 
-Once the job is assigned to a Queue, you can access the list of all jobs that 
-are currently queued or running.
+Once the job is assigned to a `jobqueue`, you can access the list of all jobs
+that are currently queued or running.
 
-Here, we'll refuse to add more than 2 jobs to the queue at once.
+Here, we'll refuse to add more than 2 jobs to the `jobqueue` at once.
 
 ```r
 qlimit <- function (job) {
   if (length(job$queue$jobs) > 2)
-    job$stop('Queue is too full.')
+    job$stop('Too many concurrent jobs.')
 }
 
-wq <- WebQueue$new(handler, hooks = list(queued = qlimit))
+wq <- webqueue(handler, hooks = list(queued = qlimit))
 
 # Fetch three URLs at the same time.
-jq <- jobqueue::Queue$new(workers = 3L)
+jq <- jobqueue::jobqueue(workers = 3L)
 r1 <- jq$run({ RCurl::getURL('http://localhost:8080?s=1') })
 r2 <- jq$run({ RCurl::getURL('http://localhost:8080?s=1') })
 r3 <- jq$run({ RCurl::getURL('http://localhost:8080?s=1') })
@@ -224,7 +224,7 @@ r2$result
 #> [1] "hello"
 
 r3$result
-#> [1] "interrupt: Queue is too full.\n"
+#> [1] "interrupt: Too many concurrent jobs.\n"
 
 jq$stop()
 wq$stop()
@@ -248,10 +248,10 @@ stop_user <- function (job) {
   }
 }
 
-wq <- WebQueue$new(handler, hooks = list(queued = stop_user))
+wq <- webqueue(handler, hooks = list(queued = stop_user))
 
 # Fetch three URLs at the same time.
-jq <- jobqueue::Queue$new(workers = 3L)
+jq <- jobqueue::jobqueue(workers = 3L)
 r1 <- jq$run({ RCurl::getURL('http://localhost:8080?u=1&s=10')   })
 r2 <- jq$run({ RCurl::getURL('http://localhost:8080?u=1&s=10')   })
 r3 <- jq$run({ RCurl::getURL('http://localhost:8080?u=2&stop=1') })

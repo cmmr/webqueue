@@ -27,4 +27,16 @@ test_that("utils", {
   expect_true(all_named(NULL))
   expect_false(all_named(c(1, 2)))
   expect_false(all_named(c(x = 1, 2)))
+  
+  
+  # is_cran_check()
+  withr::with_envvar(
+    expect_false(is_cran_check()),
+    new = c(NOT_CRAN = 'true', `_R_CHECK_PACKAGE_NAME_` = NA ))
+  withr::with_envvar(
+    expect_false(is_cran_check()),
+    new = c(NOT_CRAN = 'false', `_R_CHECK_PACKAGE_NAME_` = NA ))
+  withr::with_envvar(
+    expect_true(is_cran_check()),
+    new = c(NOT_CRAN = 'false', `_R_CHECK_PACKAGE_NAME_` = 'webqueue' ))
 })

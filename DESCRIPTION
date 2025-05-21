@@ -1,8 +1,8 @@
 Package: webqueue
 Type: Package
 Title: Multicore HTTP Server
-Version: 1.1.0
-Date: 2025-04-04
+Version: 1.2.0
+Date: 2025-05-21
 Authors@R: c(
     person(
       "Daniel P.", "Smith",
@@ -27,14 +27,14 @@ Depends: R (>= 4.2.0)
 Imports: 
     cli,
     httpuv,
+    interprocess (>= 1.2.0),
     jsonlite,
-    jobqueue (>= 1.6.0),
+    jobqueue (>= 1.6.6),
     later,
     parallelly,
     promises,
     R6,
     rlang,
-    semaphore,
     webutils,
     utils
 Suggests: 
@@ -44,3 +44,4 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     withr
+Remotes:cmmr/jobqueue

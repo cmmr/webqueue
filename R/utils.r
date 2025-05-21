@@ -44,6 +44,14 @@ valid_string <- function (x, ok = '', no = '', null_ok = FALSE) {
   
 }
 
+is_cran_check <- function() {
+  if (identical(Sys.getenv("NOT_CRAN"), "true")) {
+    FALSE
+  } else {
+    Sys.getenv("_R_CHECK_PACKAGE_NAME_", "") != ""
+  }
+}
+
 
 code_to_msg <- list(
   '100' = "Continue",
