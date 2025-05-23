@@ -193,7 +193,7 @@ and <code><a href="../reference/js_obj.html">js_obj()</a></code> functions.</p>
 <p><strong>Important</strong></p>
 <p>These functions will not be in the handler’s environment by default.
 Either call them with the <code>webqueue::</code> prefix, or create a
-WebQueue with <code>packages = 'webqueue'</code>.</p>
+<code>webqueue</code> with <code>packages = 'webqueue'</code>.</p>
 </blockquote>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span></span>
@@ -224,12 +224,13 @@ WebQueue with <code>packages = 'webqueue'</code>.</p>
 <div class="section level3">
 <h3 id="advanced">Advanced<a class="anchor" aria-label="anchor" href="#advanced"></a>
 </h3>
-<p>To bypass webqueue’s response formatting, wrap your response in
-<code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code> to indicate it should be passed on to httpuv as-is. See
-the help page for <code><a href="https://rdrr.io/pkg/httpuv/man/startServer.html" class="external-link">httpuv::startServer()</a></code> for a description
-of the expected <code>list(status, headers, body)</code> object.
-Although it says <code>body = NULL</code> is fine, I have found that to
-not be the case.</p>
+<p>To bypass <code>webqueue</code>’s response formatting, wrap your
+response in <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code> to indicate it should be passed on to
+<code>httpuv</code> as-is. See the help page for
+<code><a href="https://rdrr.io/pkg/httpuv/man/startServer.html" class="external-link">httpuv::startServer()</a></code> for a description of the expected
+<code>list(status, headers, body)</code> object. Although it says
+<code>body = NULL</code> is fine, I have found that to not be the
+case.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span></span>
 <span>  handler  <span class="op">=</span> <span class="op">~</span><span class="op">{</span></span>
@@ -240,7 +241,7 @@ not be the case.</p>
 <span>      <span class="st">'x-user-id'</span> <span class="op">=</span> <span class="st">'100'</span>,</span>
 <span>      <span class="st">'Access-Control-Expose-Headers'</span> <span class="op">=</span> <span class="st">'x-user-id'</span>,</span>
 <span>      <span class="st">'Content-Type'</span> <span class="op">=</span> <span class="st">'application/json; charset=utf-8'</span> <span class="op">)</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>body <span class="op">=</span> <span class="va">body</span>, status <span class="op">=</span> <span class="va">status</span>, headers <span class="op">=</span> <span class="va">headers</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>status <span class="op">=</span> <span class="va">status</span>, body <span class="op">=</span> <span class="va">body</span>, headers <span class="op">=</span> <span class="va">headers</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">httr2</span><span class="fu">::</span><span class="fu"><a href="https://httr2.r-lib.org/reference/request.html" class="external-link">request</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -266,8 +267,8 @@ not be the case.</p>
 <p>The <code>handler</code> function is evaluated on a background
 process, and will not have access to any variables on the foreground
 process.</p>
-<p>However, there are opportunities make modifications on the foreground
-process to <code>req</code> before it is passed to the handler, and to
+<p>However, there are opportunities to modify <code>req</code> on the
+foreground process before it is passed to the handler, and to modify
 <code>resp</code> after it is returned by the handler.</p>
 <blockquote>
 <p><strong>Important</strong></p>
@@ -281,9 +282,9 @@ handling.</p>
 <p>The <code>parse</code> function is called on <code>req</code> (an
 environment). Aside from <code>req$ARGS</code> and
 <code>req$COOKIES</code>, <code>req</code> is exactly as received from
-httpuv. After this callback, extraneous httpuv fields are removed from
-<code>req</code> to minimize the amount of data sent to the background
-process.</p>
+<code>httpuv</code>. After this callback, extraneous <code>httpuv</code>
+fields are removed from <code>req</code> to minimize the amount of data
+sent to the background process.</p>
 <ul>
 <li>Any modifications to <code>req</code> are persistent.</li>
 <li>To stop the request from this callback, use
@@ -300,16 +301,16 @@ process.</p>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span></span>
-<span>  handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">req</span><span class="op">)</span> <span class="op">{</span> <span class="va">req</span><span class="op">$</span><span class="va">counter</span> <span class="op">}</span>,</span>
-<span>  parse   <span class="op">=</span> <span class="va">parse</span> <span class="op">)</span></span>
+<span>  parse   <span class="op">=</span> <span class="va">parse</span>,</span>
+<span>  handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">req</span><span class="op">)</span> <span class="op">{</span> <span class="va">req</span><span class="op">$</span><span class="va">counter</span> <span class="op">}</span> <span class="op">)</span></span>
 <span></span>
-<span><span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fetch.html">fetch</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "1"</span></span>
 <span></span>
-<span><span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fetch.html">fetch</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "2"</span></span>
 <span></span>
-<span><span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fetch.html">fetch</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "3"</span></span>
 <span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -318,7 +319,8 @@ process.</p>
 <h3 id="job-hooks">Job Hooks<a class="anchor" aria-label="anchor" href="#job-hooks"></a>
 </h3>
 <p>After <code>parse</code> is called, the resulting <code>req</code> is
-added to a Job. Callbacks are triggered when the Job enters the
+added to a <code>job</code> (see <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>jobqueue::job_class</code></a>).
+Callbacks are triggered when the <code>job</code> enters the
 <code>'created'</code>, <code>'submitted'</code>, <code>'queued'</code>,
 and <code>'starting'</code> states.</p>
 <p>From these hooks you can edit both the <code>job</code> and
@@ -350,7 +352,7 @@ persistent.</li>
 <span>  handler <span class="op">=</span> <span class="kw">function</span> <span class="op">(</span><span class="va">req</span><span class="op">)</span> <span class="op">{</span> <span class="va">req</span><span class="op">$</span><span class="va">ARGS</span> <span class="op">}</span>,</span>
 <span>  hooks   <span class="op">=</span> <span class="va">hooks</span> <span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="../reference/fetch.html">fetch</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; {"a":[1],"b":[2],"c":[3],"d":[4]}</span></span>
 <span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -359,11 +361,12 @@ persistent.</li>
 <h3 id="response-reformatting">Response Reformatting<a class="anchor" aria-label="anchor" href="#response-reformatting"></a>
 </h3>
 <p>The <code>reformat</code> function lets you edit <code>resp</code>
-immediately after it’s returned by <code>handler</code> (before webqueue
-and httpuv try to interpret it as an HTTP response).</p>
-<p>You can access both the <code>job</code> and <code>req</code>
-environments. However, any changes made to <code>req</code> by
-<code>handler</code> will not be reflected here.</p>
+immediately after it’s returned by <code>handler</code> (before
+<code>webqueue</code> and <code>httpuv</code> try to interpret it as an
+HTTP response).</p>
+<p>You can access both the <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>
+and <code>req</code> environments. However, any changes made to
+<code>req</code> by <code>handler</code> will not be reflected here.</p>
 <blockquote>
 <p><strong>Important</strong></p>
 <p>Do NOT call <code>job$result</code> from within the
@@ -384,7 +387,7 @@ Instead, access <code>job$output</code>.</p>
 <span>  handler  <span class="op">=</span> <span class="op">~</span><span class="op">{</span> <span class="st">'Hello'</span> <span class="op">}</span>,</span>
 <span>  reformat <span class="op">=</span> <span class="va">reformat</span> <span class="op">)</span></span>
 <span></span>
-<span><span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fetch.html">fetch</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "&lt;h1&gt;Hello&lt;/h1&gt;"</span></span>
 <span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>

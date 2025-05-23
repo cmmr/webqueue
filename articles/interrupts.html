@@ -71,7 +71,7 @@
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p>Interrupts in webqueue fall into three categories:</p>
+<p>Interrupts in <code>webqueue</code> fall into three categories:</p>
 <ol style="list-style-type: decimal">
 <li>
 <strong>Timeout</strong> - set before the request starts
@@ -80,14 +80,13 @@ processing.</li>
 <strong>Replacement</strong> - a later request replaces an earlier
 one.</li>
 <li>
-<strong>Custom</strong> - your code calls a Job’s
-<code>$stop()</code> method.</li>
+<strong>Custom</strong> - your code calls <a href="https://cmmr.github.io/jobqueue/reference/job_class.html#method-stop-" class="external-link"><code>&lt;job&gt;$stop()</code></a>.</li>
 </ol>
 <div class="section level3">
 <h3 id="requests-vs-jobs">Requests vs Jobs<a class="anchor" aria-label="anchor" href="#requests-vs-jobs"></a>
 </h3>
 <p>A request (<code>req</code>) is an environment with the data sent
-from a web browser to the web server. A Job (<code>job</code>) is a <a href="https://cmmr.github.io/jobqueue/reference/Job.html" class="external-link"><code>jobqueue::Job</code>
+from a web browser to the web server. A <code>job</code> is a <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>jobqueue::job_class</code>
 R6 object</a> containing a single <code>req</code> along with the
 parameters for processing it.</p>
 <p>Some useful elements of each are:</p>
@@ -109,7 +108,8 @@ parameters for processing it.</p>
 </ul>
 </td>
 </tr></table>
-<p>Interrupts are always defined at the Job level.</p>
+<p>Interrupts are always defined at the <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>
+level.</p>
 </div>
 </div>
 <div class="section level2">
@@ -117,16 +117,18 @@ parameters for processing it.</p>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://cmmr.github.io/webqueue/">webqueue</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">RCurl</span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># By default, returns "hello" immediately.</span></span>
+<span><span class="co"># Adding '?return=myvalue' will return "myvalue" instead.</span></span>
+<span><span class="co"># Adding '?sleep=2' will wait 2 seconds before returning.</span></span>
 <span><span class="va">handler</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">req</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">args</span> <span class="op">&lt;-</span> <span class="va">req</span><span class="op">$</span><span class="va">ARGS</span>                         <span class="co"># POST/GET parameters</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">args</span><span class="op">$</span><span class="va">s</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="va">args</span><span class="op">$</span><span class="va">s</span><span class="op">)</span>  <span class="co"># sleep for `s` seconds</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">args</span><span class="op">$</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span> <span class="op">(</span><span class="va">args</span><span class="op">$</span><span class="va">x</span><span class="op">)</span>    <span class="co"># return `x` if present</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span> <span class="op">(</span><span class="st">'hello'</span><span class="op">)</span>                         <span class="co"># default to 'hello'</span></span>
+<span>  <span class="va">args</span> <span class="op">&lt;-</span> <span class="va">req</span><span class="op">$</span><span class="va">ARGS</span> <span class="co"># POST/GET parameters</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">args</span><span class="op">$</span><span class="va">sleep</span><span class="op">)</span><span class="op">)</span>  <span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="va">args</span><span class="op">$</span><span class="va">sleep</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">args</span><span class="op">$</span><span class="va">return</span><span class="op">)</span><span class="op">)</span> <span class="va">args</span><span class="op">$</span><span class="va">return</span> <span class="kw">else</span> <span class="st">'hello'</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>To interrupt a job from within <code>handler</code>, call
-<code><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop()</a></code> or <code>cli_abort()</code> as usual, or
+<p>To interrupt a <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>
+from within <code>handler</code>, call <code><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop()</a></code> or
+<code>cli_abort()</code> as usual, or
 <code>return (webqueue::response())</code> to send a more informative
 message back.</p>
 </div>
@@ -136,17 +138,18 @@ message back.</p>
 <div class="section level3">
 <h3 id="basic">Basic<a class="anchor" aria-label="anchor" href="#basic"></a>
 </h3>
-<p>Let’s start by limiting all Jobs to 1 second.</p>
+<p>Let’s start by limiting all <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>s
+to 1 second.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, timeout <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
+<span><span class="fu">getURL</span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "hello"</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?x=hi'</span><span class="op">)</span></span>
+<span><span class="fu">getURL</span><span class="op">(</span><span class="st">'http://localhost:8080?return=hi'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "hi"</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=3'</span><span class="op">)</span></span>
+<span><span class="fu">getURL</span><span class="op">(</span><span class="st">'http://localhost:8080?sleep=3'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "timeout: total runtime exceeded 1 second\n"</span></span>
 <span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -156,18 +159,23 @@ message back.</p>
 </h3>
 <p>Setting <code>timeout = 1</code> is shorthand for
 <code>timeout = c(total = 1)</code>, which starts the clock as soon as
-the job is created. If these jobs are likely to wait a long time before
-running, you might consider setting
-<code>timeout = c(running = 1)</code> which starts the clock when the
-job actually begins running. Or, set
+the <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>
+is created. If these <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>s
+are likely to wait a long time before running, you might consider
+setting <code>timeout = c(running = 1)</code> which starts the clock
+when the <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>
+actually begins running. Or, set
 <code>timeout = c(running = 1, queued = 60)</code> to also set a limit
-to how long a job can spend waiting in the queue.</p>
-<p>See the <a href="https://cmmr.github.io/jobqueue/reference/Job.html#arguments-2" class="external-link">jobqueue::Job</a>
-reference page for information on all standard Job states.</p>
+to how long a <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>
+can spend waiting in the queue.</p>
+<p>See the <a href="https://cmmr.github.io/jobqueue/reference/job_class.html#method-job-on" class="external-link"><code>jobqueue::job_class</code></a>
+reference page for information on all standard <code>job</code>
+states.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, timeout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>queued <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=3'</span><span class="op">)</span>  <span class="co"># spends 3 seconds in 'running' state</span></span>
+<span><span class="co"># spend 3 seconds in 'running' state</span></span>
+<span><span class="fu">getURL</span><span class="op">(</span><span class="st">'http://localhost:8080?sleep=3'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "hello"</span></span>
 <span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -183,10 +191,10 @@ reference page for information on all standard Job states.</p>
 <span></span>
 <span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, timeout <span class="op">=</span> <span class="va">timeout</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080/compute?s=3'</span><span class="op">)</span></span>
+<span><span class="fu">getURL</span><span class="op">(</span><span class="st">'http://localhost:8080/compute?sleep=3'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "hello"</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=3'</span><span class="op">)</span></span>
+<span><span class="fu">getURL</span><span class="op">(</span><span class="st">'http://localhost:8080?sleep=3'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "timeout: total runtime exceeded 1 second\n"</span></span>
 <span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -197,30 +205,28 @@ reference page for information on all standard Job states.</p>
 </h2>
 <p>Use the <code>stop_id</code> field to only run the most recent
 request with a given hash.</p>
-<p>For instance, if you have a session id (<code>sid</code>) you can use
+<p>For instance, if you have a session id (<code>id</code>) you can use
 that as the request hash.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">stop_id</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="op">{</span> <span class="va">job</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">sid</span> <span class="op">}</span></span>
-<span></span>
-<span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, stop_id <span class="op">=</span> <span class="va">stop_id</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Fetch three URLs at the same time.</span></span>
-<span><span class="va">jq</span> <span class="op">&lt;-</span> <span class="fu">jobqueue</span><span class="fu">::</span><span class="fu"><a href="https://cmmr.github.io/jobqueue/reference/jobqueue.html" class="external-link">jobqueue</a></span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
-<span><span class="va">r1</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?sid=1&amp;s=1&amp;x=first'</span><span class="op">)</span>  <span class="op">}</span><span class="op">)</span></span>
-<span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?sid=1&amp;s=1&amp;x=second'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
-<span><span class="va">r3</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?sid=1&amp;s=1&amp;x=third'</span><span class="op">)</span>  <span class="op">}</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">r1</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt; [1] "superseded: duplicated stop_id\n"</span></span>
-<span></span>
-<span><span class="va">r2</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt; [1] "superseded: duplicated stop_id\n"</span></span>
-<span></span>
-<span><span class="va">r3</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt; [1] "third"</span></span>
-<span></span>
-<span><span class="va">jq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>wq <span class="ot">&lt;-</span> <span class="fu">webqueue</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">handler =</span> handler, </span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">stop_id =</span> <span class="cf">function</span> (job) { job<span class="sc">$</span>req<span class="sc">$</span>ARGS<span class="sc">$</span>id } )</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co"># Fetch three URLs at the same time.</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>responses <span class="ot">&lt;-</span> <span class="fu">fetch</span>(</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="at">first  =</span> <span class="st">'http://localhost:8080?id=1&amp;sleep=1&amp;return=first'</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="at">second =</span> <span class="st">'http://localhost:8080?id=1&amp;sleep=1&amp;return=second'</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="at">third  =</span> <span class="st">'http://localhost:8080?id=1&amp;sleep=1&amp;return=third'</span> )<span class="er">)</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>responses<span class="sc">$</span>first</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; [1] "superseded: duplicated stop_id\n"</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>responses<span class="sc">$</span>second</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; [1] "superseded: duplicated stop_id\n"</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>responses<span class="sc">$</span>third</span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a><span class="co">#&gt; [1] "third"</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a>wq<span class="sc">$</span><span class="fu">stop</span>()</span></code></pre></div>
 <div class="section level3">
 <h3 id="cancel">Cancel<a class="anchor" aria-label="anchor" href="#cancel"></a>
 </h3>
@@ -232,7 +238,8 @@ that as the request hash.</p>
 <h2 id="custom">Custom<a class="anchor" aria-label="anchor" href="#custom"></a>
 </h2>
 <p>Anywhere you provide a <code>function (job)</code>, you can examine
-the Job and request, and call <code>job$stop()</code> as needed.</p>
+<a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>
+and <code>req</code>, and call <code>job$stop()</code> as needed.</p>
 <div class="section level3">
 <h3 id="ip-filter">IP Filter<a class="anchor" aria-label="anchor" href="#ip-filter"></a>
 </h3>
@@ -246,21 +253,22 @@ the Job and request, and call <code>job$stop()</code> as needed.</p>
 <span></span>
 <span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, hooks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>created <span class="op">=</span> <span class="va">ip_check</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/fetch.html">fetch</a></span><span class="op">(</span><span class="st">'http://localhost:8080'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "interrupt: Unauthorized IP Address: 127.0.0.1\n"</span></span>
 <span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>Note: in reality, you’d want to use
-<code>webqueue::webqueue(onHeaders)</code> to do this particular task
-more efficiently.</p>
+<p>Note: in reality, you’d want to use <code>webqueue(onHeaders)</code>
+to do this particular task more efficiently.</p>
 </div>
 <div class="section level3">
 <h3 id="limit-concurrency">Limit Concurrency<a class="anchor" aria-label="anchor" href="#limit-concurrency"></a>
 </h3>
 <p>Once the job is assigned to a <code>jobqueue</code>, you can access
-the list of all jobs that are currently queued or running.</p>
-<p>Here, we’ll refuse to add more than 2 jobs to the
-<code>jobqueue</code> at once.</p>
+the list of all <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>s
+that are currently queued or running.</p>
+<p>Here, we’ll refuse to add more than 2 <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>s
+to the <a href="https://cmmr.github.io/jobqueue/reference/jobqueue_class.html" class="external-link"><code>jobqueue</code></a>
+at once.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qlimit</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">job</span><span class="op">$</span><span class="va">queue</span><span class="op">$</span><span class="va">jobs</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
@@ -270,27 +278,19 @@ the list of all jobs that are currently queued or running.</p>
 <span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, hooks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>queued <span class="op">=</span> <span class="va">qlimit</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Fetch three URLs at the same time.</span></span>
-<span><span class="va">jq</span> <span class="op">&lt;-</span> <span class="fu">jobqueue</span><span class="fu">::</span><span class="fu"><a href="https://cmmr.github.io/jobqueue/reference/jobqueue.html" class="external-link">jobqueue</a></span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
-<span><span class="va">r1</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=1'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
-<span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=1'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
-<span><span class="va">r3</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?s=1'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dput.html" class="external-link">dput</a></span><span class="op">(</span><span class="fu"><a href="../reference/fetch.html">fetch</a></span><span class="op">(</span></span>
+<span>  <span class="st">'http://localhost:8080?sleep=1'</span>,</span>
+<span>  <span class="st">'http://localhost:8080?sleep=1'</span>,</span>
+<span>  <span class="st">'http://localhost:8080?sleep=1'</span> <span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; c("hello", "hello", "interrupt: Too many concurrent jobs.\n")</span></span>
 <span></span>
-<span><span class="va">r1</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt; [1] "hello"</span></span>
-<span></span>
-<span><span class="va">r2</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt; [1] "hello"</span></span>
-<span></span>
-<span><span class="va">r3</span><span class="op">$</span><span class="va">result</span></span>
-<span><span class="co">#&gt; [1] "interrupt: Too many concurrent jobs.\n"</span></span>
-<span></span>
-<span><span class="va">jq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="stop-other-jobs">Stop Other Jobs<a class="anchor" aria-label="anchor" href="#stop-other-jobs"></a>
 </h3>
-<p>Suppose an admin needs to stop all jobs for a particular user.</p>
+<p>Suppose an admin needs to stop all <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>s
+for a particular user.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stop_user</span> <span class="op">&lt;-</span> <span class="kw">function</span> <span class="op">(</span><span class="va">job</span><span class="op">)</span> <span class="op">{</span></span>
 <span></span>
@@ -298,7 +298,7 @@ the list of all jobs that are currently queued or running.</p>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">stop_uid</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  </span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">j</span> <span class="kw">in</span> <span class="va">job</span><span class="op">$</span><span class="va">queue</span><span class="op">$</span><span class="va">jobs</span><span class="op">)</span></span>
-<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">j</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">u</span> <span class="op">==</span> <span class="va">stop_uid</span><span class="op">)</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="va">j</span><span class="op">$</span><span class="va">req</span><span class="op">$</span><span class="va">ARGS</span><span class="op">$</span><span class="va">uid</span> <span class="op">==</span> <span class="va">stop_uid</span><span class="op">)</span></span>
 <span>        <span class="va">j</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="st">'Stopped by admin.'</span><span class="op">)</span></span>
 <span>    </span>
 <span>    <span class="va">job</span><span class="op">$</span><span class="va">output</span> <span class="op">&lt;-</span> <span class="st">'done'</span></span>
@@ -308,21 +308,20 @@ the list of all jobs that are currently queued or running.</p>
 <span><span class="va">wq</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/WebQueue.html">webqueue</a></span><span class="op">(</span><span class="va">handler</span>, hooks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>queued <span class="op">=</span> <span class="va">stop_user</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Fetch three URLs at the same time.</span></span>
-<span><span class="va">jq</span> <span class="op">&lt;-</span> <span class="fu">jobqueue</span><span class="fu">::</span><span class="fu"><a href="https://cmmr.github.io/jobqueue/reference/jobqueue.html" class="external-link">jobqueue</a></span><span class="op">(</span>workers <span class="op">=</span> <span class="fl">3L</span><span class="op">)</span></span>
-<span><span class="va">r1</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?u=1&amp;s=10'</span><span class="op">)</span>   <span class="op">}</span><span class="op">)</span></span>
-<span><span class="va">r2</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?u=1&amp;s=10'</span><span class="op">)</span>   <span class="op">}</span><span class="op">)</span></span>
-<span><span class="va">r3</span> <span class="op">&lt;-</span> <span class="va">jq</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span><span class="op">{</span> <span class="fu">RCurl</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/RCurl/man/getURL.html" class="external-link">getURL</a></span><span class="op">(</span><span class="st">'http://localhost:8080?u=2&amp;stop=1'</span><span class="op">)</span> <span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">responses</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fetch.html">fetch</a></span><span class="op">(</span></span>
+<span>  <span class="st">'http://localhost:8080?uid=1&amp;sleep=10'</span>,</span>
+<span>  <span class="st">'http://localhost:8080?uid=1&amp;sleep=10'</span>,</span>
+<span>  <span class="st">'http://localhost:8080?uid=2&amp;stop=1'</span> <span class="op">)</span></span>
 <span></span>
-<span><span class="va">r1</span><span class="op">$</span><span class="va">result</span></span>
+<span><span class="va">responses</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] "interrupt: Stopped by admin.\n"</span></span>
 <span></span>
-<span><span class="va">r2</span><span class="op">$</span><span class="va">result</span></span>
+<span><span class="va">responses</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] "interrupt: Stopped by admin.\n"</span></span>
 <span></span>
-<span><span class="va">r3</span><span class="op">$</span><span class="va">result</span></span>
+<span><span class="va">responses</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="co">#&gt; [1] "done"</span></span>
 <span></span>
-<span><span class="va">jq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">wq</span><span class="op">$</span><span class="kw">stop</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
