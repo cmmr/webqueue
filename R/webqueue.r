@@ -3,7 +3,7 @@
 #'
 #' @description
 #' 
-#' Connects the 'httpuv' and 'jobqueue' R packages.
+#' Connects the `httpuv` and [`jobqueue`][jobqueue::jobqueue()] R packages.
 #' 
 #' 
 #' @param handler  A `function (request)` that will be run on a background 
@@ -19,7 +19,7 @@
 #' 
 #' @param parse  A `function (req)` that is run on the foreground process to 
 #'        transform the HTTP request prior to passing it to `handler`. `req` is 
-#'        the environment object provided by 'httpuv', amended with `$ARGS` and 
+#'        the environment object provided by `httpuv`, amended with `$ARGS` and 
 #'        `$COOKIES`. Return value is used as `req` going forward.
 #' 
 #' @param globals  A list of variables to add to `handler`'s evaluation 
@@ -36,8 +36,8 @@
 #'        `namespace`. Returned value is ignored.
 #' 
 #' @param max_cpus  Total number of CPU cores that can be reserved by all 
-#'        running Jobs (`sum(cpus)`). Does not enforce limits on actual CPU 
-#'        utilization.
+#'        running [`job`][jobqueue::job_class()]s (`sum(cpus)`). Does not enforce 
+#'        limits on actual CPU utilization.
 #' 
 #' @param workers  How many background worker processes to start. 
 #'        Set to more than `max_cpus` to enable interrupted workers to be 
@@ -45,35 +45,39 @@
 #'        boots up.
 #' 
 #' @param timeout  A named numeric vector indicating the maximum number of 
-#'        seconds allowed for each state the job passes through, or 'total' to
-#'        apply a single timeout from 'submitted' to 'done'. Example:
-#'        `timeout = c(total = 2.5, running = 1)`.
+#'        seconds allowed for each state the [`job`][jobqueue::job_class()] 
+#'        passes through, or 'total' to apply a single timeout from 'submitted' 
+#'        to 'done'. Example: `timeout = c(total = 2.5, running = 1)`.
 #' 
-#' @param hooks  A list of functions to run when the Job state changes, of the 
-#'        form `hooks = list(created = function (job) {...}, done = ~{...})`.
+#' @param hooks  A list of functions to run when the 
+#'        [`job`][jobqueue::job_class()] state changes, of the form 
+#'        `hooks = list(created = function (job) {...}, done = ~{...})`.
 #'        See `vignette('hooks')`.
 #' 
 #' @param reformat  A `function (job)` that is run in the foreground process to 
 #'        transform the output from `handler`. The default, `reformat = NULL`, 
 #'        is essentially `function (job) { job$output }`.
 #' 
-#' @param stop_id  A `function (job)`. If two Jobs generate the same value from
-#'        this function, then the earlier Job will be aborted. If the returned 
-#'        value is `NULL`, no Jobs will be stopped.
-#'                 
-#' @param copy_id  A `function (job)`. If two Jobs generate the same value from
-#'        this function, then the later Job will clone its output from the 
-#'        earlier Job. If the returned value is `NULL`, no Jobs will be cloned.
+#' @param stop_id  A `function (job)`. If two [`job`][jobqueue::job_class()]s 
+#'        generate the same value from this function, then the earlier 
+#'        [`job`][jobqueue::job_class()] will be aborted. If the returned value 
+#'        is `NULL`, no [`job`][jobqueue::job_class()]s will be stopped.
+#'        
+#' @param copy_id  A `function (job)`. If two [`job`][jobqueue::job_class()]s 
+#'        generate the same value from this function, then the later 
+#'        [`job`][jobqueue::job_class()] will clone its output from the earlier 
+#'        [`job`][jobqueue::job_class()]. If the returned value is `NULL`, no 
+#'        [`job`][jobqueue::job_class()]s will be cloned.
 #' 
 #' @param bg   Where/how to run the server. `TRUE`: on a separate R process.
 #'        `FALSE`: blocking on the current R process. `NULL`: non-blocking on 
 #'        the current R process.
 #' 
-#' @param quiet   If `TRUE`, suppress error messages from starting the 'httpuv' 
+#' @param quiet   If `TRUE`, suppress error messages from starting the `httpuv` 
 #'        server.
 #' 
 #' @param onHeaders   A `function (request)` triggered when headers are 
-#'        received by 'httpuv'. Return NULL to continue normal processing of 
+#'        received by `httpuv`. Return NULL to continue normal processing of 
 #'        the request, or a Rook response to send that response, stop 
 #'        processing the request, and ask the client to close the connection. 
 #'        (This can be used to implement upload size limits, for example.)
@@ -93,13 +97,14 @@
 #' * `$url`
 #'   - Returns the URL where the server is available.
 #' * `$stop(reason = 'server stopped')`
-#'   - Shuts down the webqueue and all associated subprocesses. Stopped Jobs 
-#'     will have their `$output` set to a object of class `<interrupt/condition>`.
+#'   - Shuts down the `webqueue` and all associated subprocesses. Stopped 
+#'     [`job`][jobqueue::job_class()]s will have their `$output` set to a object 
+#'     of class `<interrupt/condition>`.
 #'   - `reason` - A brief message for the condition object.
-#'   - Returns this webqueue, invisibly.
+#'   - Returns this `webqueue`, invisibly.
 #'
 #' @export
-#' @examplesIf ! jobqueue:::is_cran_check()
+#' @examplesIf ! webqueue:::is_cran_check()
 #'     
 #'     library(webqueue)
 #'     
@@ -173,7 +178,7 @@ webqueue_class <- R6Class(
     #' @description
     #' Creates an `httpuv::WebServer` with requests handled by a `jobqueue::jobqueue`.
     #'
-    #' @return A `WebQueue` object.
+    #' @return A `webqueue` object.
     initialize = function (
         handler,
         host              = '0.0.0.0',
@@ -199,6 +204,7 @@ webqueue_class <- R6Class(
       # Capture curly-brace expression
       init_subst <- substitute(init)
       if (isa(init_subst, '{')) init <- init_subst
+      remove('init_subst')
       
       # Convert lambda syntax to functions.
       if (is_formula(handler))   handler   <- as_function(handler)
@@ -222,16 +228,15 @@ webqueue_class <- R6Class(
         if (!file.exists(fp) && !dir.exists(fp))
           dir.create(fp, recursive = TRUE)
       }
+      remove(list = intersect(ls(), c('fp', 'i')))
       
       
-      # Launch WebQueue on a different R process
+      # Launch `webqueue` on a different R process
       if (isTRUE(bg)) {
         
-        worker  <- jobqueue::worker_class$new()
-        sem     <- interprocess::semaphore()
-        start_t <- Sys.time()
+        bg_mutex_name <- interprocess::uid()
         
-        job <- jobqueue::job_class$new(
+        private$bg_job <- jobqueue::job_class$new(
           vars = environment(), 
           expr = { # nocov start
             
@@ -258,38 +263,49 @@ webqueue_class <- R6Class(
               staticPaths       = staticPaths,
               staticPathOptions = staticPathOptions )
             
-            sem$post()
+            # Will remain locked until background process terminates.
+            if (!interprocess::mutex(bg_mutex_name)$lock(timeout_ms = 100))
+              stop('Cannot lock mutex ', bg_id)
             
             httpuv::service(timeoutMs = Inf)
             
           } # nocov end
         )
         
-        private$worker <- worker$run(job)
+        private$bg_worker <- jobqueue::worker_class$new()$run(private$bg_job)
+        private$bg_mutex  <- interprocess::mutex(bg_mutex_name, cleanup = TRUE)
         
+        start_time <- as.numeric(Sys.time())
         
         cnd <- catch_cnd({
           
-          while (!sem$wait(timeout_ms = 0)) {
+          # loop until the mutex is locked by another process
+          while (with(private$bg_mutex, TRUE, FALSE, timeout_ms = 0)) {
             
-            if (job$is_done) {
-              output <- job$output
+            if (private$bg_job$is_done) {
+              output <- private$bg_job$output
               if (inherits(output, 'error')) cnd_signal(output)
-              cli_abort('Unable to start WebQueue')  # nocov
+              cli_abort('Unable to start webqueue')  # nocov
             }
+            
+            if (as.numeric(Sys.time()) - start_time > 30)
+              cli_abort('webqueue took longer than 30 seconds to start.')  # nocov
             
             later::run_now(timeoutSecs = 0.5)
           }
           
         })
         
-        if (!is.null(cnd)) worker$stop()
-        sem$remove()
-        if (!is.null(cnd)) cnd_signal(cnd)
+        if (!is.null(cnd)) {
+          self$stop()
+          cnd_signal(cnd)
+        }
+        
+        private$.status <- 'running'
         
       } 
       
-      # Launch WebQueue on this R process
+      # Launch `webqueue` on this R process
       else {
         
         private$parse            <- parse
@@ -298,7 +314,7 @@ webqueue_class <- R6Class(
         cnd <- catch_cnd({
         
           # Start a `jobqueue`.
-          private$.jobqueue <- jobqueue::jobqueue(
+          private$jobqueue <- jobqueue::jobqueue(
             globals   = globals,
             packages  = packages,
             namespace = namespace,
@@ -313,12 +329,12 @@ webqueue_class <- R6Class(
             copy_id   = copy_id )
           
           later::run_now()
-          if (!identical(private$.jobqueue$state, 'idle'))
+          if (!identical(private$jobqueue$state, 'idle'))
             stop('Unable to start a `jobqueue`')  # nocov
           
             
           # Start a Server.
-          private$.httpuv <- httpuv::startServer(
+          private$httpuv <- httpuv::startServer(
             host  = host,
             port  = port,
             quiet = quiet,
@@ -329,7 +345,7 @@ webqueue_class <- R6Class(
               staticPathOptions = staticPathOptions ))
           
           later::run_now()
-          if (!isTRUE(private$.httpuv$isRunning()))
+          if (!isTRUE(private$httpuv$isRunning()))
             stop('Unable to start httpuv')  # nocov
           
         })
@@ -338,11 +354,11 @@ webqueue_class <- R6Class(
           self$stop()      # nocov
           cnd_signal(cnd)  # nocov
         }
-        
       }
       
       
-      private$.url <- paste0(
+      private$.status <- 'running'
+      private$.url    <- paste0(
         'http://',
         ifelse(host == '0.0.0.0', '127.0.0.1', host),
         ifelse(port == 80L, '', paste0(':', port)) )
@@ -352,20 +368,25 @@ webqueue_class <- R6Class(
     
     
     #' @description
-    #' Print method for a WebQueue.
+    #' Print method for a `webqueue`.
     #' @param ... Arguments are not used currently.
     print = function (...) {
-      cli_text('{.cls {class(self)}} on {.url {self$url}}')
+      if (self$status == 'stopped') {
+        cli_text('{.cls {class(self)}} [stopped]')
+      } else {
+        cli_text('{.cls {class(self)}} {self$status} on {.url {self$url}}')
+      }
     },
     
     
     #' @description
-    #' Shuts down the WebQueue and all associated subprocesses. Stopped Jobs
-    #' will have their `$output` set to a object of class `<interrupt/condition>`
+    #' Shuts down the `webqueue` and all associated subprocesses. Stopped 
+    #' [`job`][jobqueue::job_class()]s will have their `$output` set to a object 
+    #' of class `<interrupt/condition>`.
     #' 
     #' @param reason   A brief message for the condition object.
     #' 
-    #' @return This WebQueue, invisibly.
+    #' @return This `webqueue`, invisibly.
     stop = function (reason = 'server stopped') {
       private$finalize(reason)
       return (invisible(self))
@@ -374,12 +395,15 @@ webqueue_class <- R6Class(
   
   private = list(
     
-    .jobqueue = NULL,
-    .httpuv   = NULL,
     .url      = NULL,
+    .status   = 'starting',
+    jobqueue  = NULL,
+    httpuv    = NULL,
     handler   = NULL,
     parse     = NULL,
-    worker    = NULL,
+    bg_worker = NULL,
+    bg_job    = NULL,
+    bg_mutex  = NULL,
     
     app_call = function (req) {
       
@@ -406,7 +430,7 @@ webqueue_class <- R6Class(
       })
       if (!is.null(cnd)) return (format_500(cnd))
       
-      job <- private$.jobqueue$run(
+      job <- private$jobqueue$run(
         expr = quote(.wq_handler(.wq_request)),
         vars = list(.wq_request = req),
         req  = req )
@@ -420,12 +444,18 @@ webqueue_class <- R6Class(
     
     finalize = function (reason = 'server stopped') {
       
-      if (!is.null(private$worker)) {
-        private$worker$stop()
-      } else {
-        if (!is.null(jq  <- private$.jobqueue)) jq$stop(reason)
-        if (!is.null(svr <- private$.httpuv))   svr$stop()
-      }
+      if (!is.null(private$jobqueue))  private$jobqueue$stop(reason)
+      if (!is.null(private$httpuv))    private$httpuv$stop()
+      if (!is.null(private$bg_job))    private$bg_job$stop(reason)
+      if (!is.null(private$bg_worker)) private$bg_worker$stop(reason)
+      if (!is.null(private$bg_mutex))  private$bg_mutex$remove()
+      
+      private$jobqueue  <- NULL
+      private$httpuv    <- NULL
+      private$bg_job    <- NULL
+      private$bg_worker <- NULL
+      private$bg_mutex  <- NULL
+      private$.status   <- 'stopped'
       
       invisible()
     }
@@ -435,7 +465,17 @@ webqueue_class <- R6Class(
     
     #' @field url
     #' URL where the server is available.
-    url = function () private$.url
+    url = function () { private$.url },
+    
+    
+    #' @field status
+    #' Returns `'starting'`, `'running'`, or `'stopped'`.
+    status = function () {
+      if (!is.null(private$bg_mutex))
+        if (with(private$bg_mutex, TRUE, FALSE, timeout_ms = 0))
+          self$stop() # nocov
+      private$.status
+    }
     
   )
 )
@@ -479,7 +519,7 @@ parse_cookies <- function (req) {
 format_200 <- function (result) {
   
   #________________________________________________________
-  # Hand 'AsIs' objects back to httpuv unchanged.
+  # Hand 'AsIs' objects back to `httpuv` unchanged.
   #________________________________________________________
   if (inherits(result, 'AsIs')) return (result)
   
@@ -491,7 +531,7 @@ format_200 <- function (result) {
 format_500 <- function (result) {
   
   #________________________________________________________
-  # Hand 'AsIs' objects back to httpuv unchanged.
+  # Hand 'AsIs' objects back to `httpuv` unchanged.
   #________________________________________________________
   if (inherits(result, 'AsIs')) return (result)
   

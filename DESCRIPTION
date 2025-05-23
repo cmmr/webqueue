@@ -26,6 +26,7 @@ Config/testthat/edition: 3
 Depends: R (>= 4.2.0)
 Imports: 
     cli,
+    curl,
     httpuv,
     interprocess (>= 1.2.0),
     jsonlite,
@@ -40,7 +41,6 @@ Imports:
 Suggests: 
     httr2,
     knitr,
-    RCurl,
     rmarkdown,
     testthat (>= 3.0.0),
     withr

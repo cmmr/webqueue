@@ -41,7 +41,7 @@ and macOS, port numbers smaller than 1024 require root privileges.}
 
 \item{parse}{A \verb{function (req)} that is run on the foreground process to
 transform the HTTP request prior to passing it to \code{handler}. \code{req} is
-the environment object provided by 'httpuv', amended with \verb{$ARGS} and
+the environment object provided by \code{httpuv}, amended with \verb{$ARGS} and
 \verb{$COOKIES}. Return value is used as \code{req} going forward.}
 
 \item{globals}{A list of variables to add to \code{handler}'s evaluation
@@ -58,8 +58,8 @@ to variables defined by \code{globals} and assets from \code{packages} and
 \code{namespace}. Returned value is ignored.}
 
 \item{max_cpus}{Total number of CPU cores that can be reserved by all
-running Jobs (\code{sum(cpus)}). Does not enforce limits on actual CPU
-utilization.}
+running \code{\link[jobqueue:job_class]{job}}s (\code{sum(cpus)}). Does not enforce
+limits on actual CPU utilization.}
 
 \item{workers}{How many background worker processes to start.
 Set to more than \code{max_cpus} to enable interrupted workers to be
@@ -67,35 +67,39 @@ quickly swapped out with standby Workers while a replacement Worker
 boots up.}
 
 \item{timeout}{A named numeric vector indicating the maximum number of
-seconds allowed for each state the job passes through, or 'total' to
-apply a single timeout from 'submitted' to 'done'. Example:
-\code{timeout = c(total = 2.5, running = 1)}.}
+seconds allowed for each state the \code{\link[jobqueue:job_class]{job}}
+passes through, or 'total' to apply a single timeout from 'submitted'
+to 'done'. Example: \code{timeout = c(total = 2.5, running = 1)}.}
 
-\item{hooks}{A list of functions to run when the Job state changes, of the
-form \code{hooks = list(created = function (job) {...}, done = ~{...})}.
+\item{hooks}{A list of functions to run when the
+\code{\link[jobqueue:job_class]{job}} state changes, of the form
+\code{hooks = list(created = function (job) {...}, done = ~{...})}.
 See \code{vignette('hooks')}.}
 
 \item{reformat}{A \verb{function (job)} that is run in the foreground process to
 transform the output from \code{handler}. The default, \code{reformat = NULL},
 is essentially \code{function (job) { job$output }}.}
 
-\item{stop_id}{A \verb{function (job)}. If two Jobs generate the same value from
-this function, then the earlier Job will be aborted. If the returned
-value is \code{NULL}, no Jobs will be stopped.}
+\item{stop_id}{A \verb{function (job)}. If two \code{\link[jobqueue:job_class]{job}}s
+generate the same value from this function, then the earlier
+\code{\link[jobqueue:job_class]{job}} will be aborted. If the returned value
+is \code{NULL}, no \code{\link[jobqueue:job_class]{job}}s will be stopped.}
 
-\item{copy_id}{A \verb{function (job)}. If two Jobs generate the same value from
-this function, then the later Job will clone its output from the
-earlier Job. If the returned value is \code{NULL}, no Jobs will be cloned.}
+\item{copy_id}{A \verb{function (job)}. If two \code{\link[jobqueue:job_class]{job}}s
+generate the same value from this function, then the later
+\code{\link[jobqueue:job_class]{job}} will clone its output from the earlier
+\code{\link[jobqueue:job_class]{job}}. If the returned value is \code{NULL}, no
+\code{\link[jobqueue:job_class]{job}}s will be cloned.}
 
 \item{bg}{Where/how to run the server. \code{TRUE}: on a separate R process.
 \code{FALSE}: blocking on the current R process. \code{NULL}: non-blocking on
 the current R process.}
 
-\item{quiet}{If \code{TRUE}, suppress error messages from starting the 'httpuv'
+\item{quiet}{If \code{TRUE}, suppress error messages from starting the \code{httpuv}
 server.}
 
 \item{onHeaders}{A \verb{function (request)} triggered when headers are
-received by 'httpuv'. Return NULL to continue normal processing of
+received by \code{httpuv}. Return NULL to continue normal processing of
 the request, or a Rook response to send that response, stop
 processing the request, and ask the client to close the connection.
 (This can be used to implement upload size limits, for example.)}
@@ -118,18 +122,19 @@ A \code{webqueue} object with the following methods:
 }
 \item \verb{$stop(reason = 'server stopped')}
 \itemize{
-\item Shuts down the webqueue and all associated subprocesses. Stopped Jobs
-will have their \verb{$output} set to a object of class \verb{<interrupt/condition>}.
+\item Shuts down the \code{webqueue} and all associated subprocesses. Stopped
+\code{\link[jobqueue:job_class]{job}}s will have their \verb{$output} set to a object
+of class \verb{<interrupt/condition>}.
 \item \code{reason} - A brief message for the condition object.
-\item Returns this webqueue, invisibly.
+\item Returns this \code{webqueue}, invisibly.
 }
 }
 }
 \description{
-Connects the 'httpuv' and 'jobqueue' R packages.
+Connects the \code{httpuv} and \code{\link[jobqueue:jobqueue]{jobqueue}} R packages.
 }
 \examples{
-\dontshow{if (! jobqueue:::is_cran_check()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
+\dontshow{if (! webqueue:::is_cran_check()) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}
     
     library(webqueue)
     

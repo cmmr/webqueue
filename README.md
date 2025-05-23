@@ -52,7 +52,7 @@ wq$stop()
 ```r
 wq <- webqueue(~{ jsonlite::toJSON(.$ARGS) })
 
-cat(RCurl::getURL('http://localhost:8080?myvar=123'))
+cat(fetch('http://localhost:8080?myvar=123'))
 #> {"myvar":["123"]}
 
 wq$stop()
@@ -75,10 +75,10 @@ wq <- webqueue(
       404L )
 })
 
-cat(RCurl::getURL('http://localhost:8080/cpus'))
-#> 6
+fetch('http://localhost:8080/cpus')
+#> [1] "6"
 
-cat(RCurl::getURL('http://localhost:8080/req?x=123&id=ABC'))
+cat(fetch('http://localhost:8080/req?x=123&id=ABC'))
 #> ARGS : List of 2
 #>  $ x : chr "123"
 #>  $ id: chr "ABC"
@@ -98,7 +98,8 @@ wq$stop()
 
 ## Interrupting Requests
 
-The strength of webqueue is its ability to cleanly abort a request at any point.
+The strength of `webqueue` is its ability to cleanly abort a request at any 
+point.
 
 See `vignette('interrupts')` for more detailed examples.
 
@@ -107,13 +108,13 @@ See `vignette('interrupts')` for more detailed examples.
 
 ```r
 wq <- webqueue(
-  handler = ~{ Sys.sleep(.$ARGS$s); 'Hello world!' }, 
+  handler = ~{ Sys.sleep(.$ARGS$sleep); 'Hello world!' }, 
   timeout = 1 )
 
-RCurl::getURL('http://localhost:8080?s=2')
+fetch('http://localhost:8080?sleep=2')
 #> [1] "timeout: total runtime exceeded 1 second\n"
 
-RCurl::getURL('http://localhost:8080?s=0')
+fetch('http://localhost:8080?sleep=0')
 #> [1] "Hello world!"
 
 wq$stop()
@@ -124,42 +125,36 @@ wq$stop()
 ### Merge duplicate requests
 
 ```r
+# `copy_id` will be "/a" or "/b"
 wq <- webqueue(
   handler = function (req) { Sys.sleep(1); req$ARGS$x }, 
   copy_id = function (job) job$req$PATH_INFO )
-# ^^^^^^^   `copy_id` will be '/a' or '/b'
 
-# Fetch two URLs at the same time. '/b' path is merged.
-jq <- jobqueue::jobqueue(workers = 3L)$wait()    # vv
-a1 <- jq$run({ RCurl::getURL('http://localhost:8080/a?x=first') })
-b1 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=second') })
-b2 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=third') })
+# Fetch three URLs at the same time. "/b" path is merged.
+dput(fetch(
+  'http://localhost:8080/a?x=first',
+  'http://localhost:8080/b?x=second',
+  'http://localhost:8080/b?x=third' ))
+#> c("first", "second", "second")
 
-dput(c(a1 = a1$result, b1 = b1$result, b2 = b2$result))
-#> c(a1 = "first", b1 = "second", b2 = "second")
-
-jq$stop()
 wq$stop()
 ```
 
 
 ### Stop duplicate requests
 ```r
+# `stop_id` will be "/a" or "/b"
 wq <- webqueue(
   handler = function (req) { Sys.sleep(1); req$ARGS$x }, 
   stop_id = function (job) job$req$PATH_INFO )
-# ^^^^^^^   `stop_id` will be '/a' or '/b'
 
-# Fetch three URLs at the same time. '/b' path is stopped.
-jq <- jobqueue::jobqueue(workers = 3L)$wait()    # vv
-a1 <- jq$run({ RCurl::getURL('http://localhost:8080/a?x=first') })
-b1 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=second') })
-b2 <- jq$run({ RCurl::getURL('http://localhost:8080/b?x=third') })
+# Fetch three URLs at the same time. "/b" path is stopped.
+dput(fetch(
+  'http://localhost:8080/a?x=first',
+  'http://localhost:8080/b?x=second',
+  'http://localhost:8080/b?x=third' ))
+#> c("first", "superseded: duplicated stop_id\n", "third")
 
-dput(c(a1 = a1$result, b1 = b1$result, b2 = b2$result))
-#> c(a1 = "first", b1 = "superseded: duplicated stop_id\n", b2 = "third")
-
-jq$stop()
 wq$stop()
 ```
 

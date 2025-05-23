@@ -10,16 +10,20 @@ vignette: >
 
 ## Overview
 
-Interrupts in webqueue fall into three categories:
+Interrupts in `webqueue` fall into three categories:
 
 1. **Timeout** - set before the request starts processing.
 2. **Replacement** - a later request replaces an earlier one.
-3. **Custom** - your code calls a Job's `$stop()` method.
+3. **Custom** - your code calls 
+   [`<job>$stop()`](https://cmmr.github.io/jobqueue/reference/job_class.html#method-stop-).
 
 
 ### Requests vs Jobs
 
-A request (`req`) is an environment with the data sent from a web browser to the web server. A Job (`job`) is a [`jobqueue::Job` R6 object](https://cmmr.github.io/jobqueue/reference/Job.html) containing a single `req` along with the parameters for processing it.
+A request (`req`) is an environment with the data sent from a web browser to 
+the web server. A `job` is a 
+[`jobqueue::job_class` R6 object](https://cmmr.github.io/jobqueue/reference/job_class.html) 
+containing a single `req` along with the parameters for processing it.
 
 Some useful elements of each are:
 
@@ -39,25 +43,30 @@ Some useful elements of each are:
 
 </td></tr></table>
 
-Interrupts are always defined at the Job level.
+Interrupts are always defined at the 
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) level.
 
 
 ## Setup
 
 ```r
 library(webqueue)
-library(RCurl)
 
+# By default, returns "hello" immediately.
+# Adding '?return=myvalue' will return "myvalue" instead.
+# Adding '?sleep=2' will wait 2 seconds before returning.
 handler <- function (req) {
-  args <- req$ARGS                         # POST/GET parameters
-  if (!is.null(args$s)) Sys.sleep(args$s)  # sleep for `s` seconds
-  if (!is.null(args$x)) return (args$x)    # return `x` if present
-  return ('hello')                         # default to 'hello'
+  args <- req$ARGS # POST/GET parameters
+  if (!is.null(args$sleep))  Sys.sleep(args$sleep)
+  if (!is.null(args$return)) args$return else 'hello'
 }
 
 ```
 
-To interrupt a job from within `handler`, call `stop()` or `cli_abort()` as usual, or `return (webqueue::response())` to send a more informative message back.
+To interrupt a 
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) from within
+`handler`, call `stop()` or `cli_abort()` as usual, or 
+`return (webqueue::response())` to send a more informative message back.
 
 
 
@@ -66,7 +75,8 @@ To interrupt a job from within `handler`, call `stop()` or `cli_abort()` as usua
 
 ### Basic
 
-Let's start by limiting all Jobs to 1 second.
+Let's start by limiting all 
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html)s to 1 second.
 
 ```r
 wq <- webqueue(handler, timeout = 1)
@@ -74,10 +84,10 @@ wq <- webqueue(handler, timeout = 1)
 getURL('http://localhost:8080')
 #> [1] "hello"
 
-getURL('http://localhost:8080?x=hi')
+getURL('http://localhost:8080?return=hi')
 #> [1] "hi"
 
-getURL('http://localhost:8080?s=3')
+getURL('http://localhost:8080?sleep=3')
 #> [1] "timeout: total runtime exceeded 1 second\n"
 
 wq$stop()
@@ -87,19 +97,26 @@ wq$stop()
 ### Per State
 
 Setting `timeout = 1` is shorthand for `timeout = c(total = 1)`, which starts 
-the clock as soon as the job is created. If these jobs are likely to wait a 
-long time before running, you might consider setting `timeout = c(running = 1)` 
-which starts the clock when the job actually begins running. Or, set 
-`timeout = c(running = 1, queued = 60)`  to also set a limit to how long a job 
-can spend waiting in the queue.
+the clock as soon as the 
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) is created. 
+If these [`job`](https://cmmr.github.io/jobqueue/reference/job_class.html)s are 
+likely to wait a long time before running, you might consider setting 
+`timeout = c(running = 1)` which starts the clock when the 
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) actually 
+begins running. Or, set `timeout = c(running = 1, queued = 60)` to also set a 
+limit to how long a 
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) can spend 
+waiting in the queue.
 
-See the [jobqueue::Job](https://cmmr.github.io/jobqueue/reference/Job.html#arguments-2)
-reference page for information on all standard Job states.
+See the 
+[`jobqueue::job_class`](https://cmmr.github.io/jobqueue/reference/job_class.html#method-job-on)
+reference page for information on all standard `job` states.
 
 ```r
 wq <- webqueue(handler, timeout = c(queued = 1))
 
-getURL('http://localhost:8080?s=3')  # spends 3 seconds in 'running' state
+# spend 3 seconds in 'running' state
+getURL('http://localhost:8080?sleep=3')
 #> [1] "hello"
 
 wq$stop()
@@ -117,10 +134,10 @@ timeout <- function (job) {
 
 wq <- webqueue(handler, timeout = timeout)
 
-getURL('http://localhost:8080/compute?s=3')
+getURL('http://localhost:8080/compute?sleep=3')
 #> [1] "hello"
 
-getURL('http://localhost:8080?s=3')
+getURL('http://localhost:8080?sleep=3')
 #> [1] "timeout: total runtime exceeded 1 second\n"
 
 wq$stop()
@@ -132,30 +149,29 @@ wq$stop()
 
 Use the `stop_id` field to only run the most recent request with a given hash.
 
-For instance, if you have a session id (`sid`) you can use that as the request hash.
+For instance, if you have a session id (`id`) you can use that as the request hash.
 
 
 ```r
-stop_id <- function (job) { job$req$ARGS$sid }
-
-wq <- webqueue(handler, stop_id = stop_id)
+wq <- webqueue(
+  handler = handler, 
+  stop_id = function (job) { job$req$ARGS$id } )
 
 # Fetch three URLs at the same time.
-jq <- jobqueue::jobqueue(workers = 3L)
-r1 <- jq$run({ RCurl::getURL('http://localhost:8080?sid=1&s=1&x=first')  })
-r2 <- jq$run({ RCurl::getURL('http://localhost:8080?sid=1&s=1&x=second') })
-r3 <- jq$run({ RCurl::getURL('http://localhost:8080?sid=1&s=1&x=third')  })
+responses <- fetch(
+  first  = 'http://localhost:8080?id=1&sleep=1&return=first',
+  second = 'http://localhost:8080?id=1&sleep=1&return=second',
+  third  = 'http://localhost:8080?id=1&sleep=1&return=third' ))
 
-r1$result
+responses$first
 #> [1] "superseded: duplicated stop_id\n"
 
-r2$result
+responses$second
 #> [1] "superseded: duplicated stop_id\n"
 
-r3$result
+responses$third
 #> [1] "third"
 
-jq$stop()
 wq$stop()
 ```
 
@@ -170,7 +186,8 @@ an actual request.
 
 ## Custom
 
-Anywhere you provide a `function (job)`, you can examine the Job and request, 
+Anywhere you provide a `function (job)`, you can examine 
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) and `req`, 
 and call `job$stop()` as needed.
 
 ### IP Filter
@@ -186,22 +203,26 @@ ip_check <- function (job) {
 
 wq <- webqueue(handler, hooks = list(created = ip_check))
 
-getURL('http://localhost:8080')
+fetch('http://localhost:8080')
 #> [1] "interrupt: Unauthorized IP Address: 127.0.0.1\n"
 
 wq$stop()
 ```
 
-Note: in reality, you'd want to use `webqueue::webqueue(onHeaders)` to do 
+Note: in reality, you'd want to use `webqueue(onHeaders)` to do 
 this particular task more efficiently.
 
 
 ### Limit Concurrency
 
-Once the job is assigned to a `jobqueue`, you can access the list of all jobs
-that are currently queued or running.
+Once the job is assigned to a `jobqueue`, you can access the list of all 
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html)s that are 
+currently queued or running.
 
-Here, we'll refuse to add more than 2 jobs to the `jobqueue` at once.
+Here, we'll refuse to add more than 2 
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html)s to the 
+[`jobqueue`](https://cmmr.github.io/jobqueue/reference/jobqueue_class.html) at 
+once.
 
 ```r
 qlimit <- function (job) {
@@ -212,27 +233,20 @@ qlimit <- function (job) {
 wq <- webqueue(handler, hooks = list(queued = qlimit))
 
 # Fetch three URLs at the same time.
-jq <- jobqueue::jobqueue(workers = 3L)
-r1 <- jq$run({ RCurl::getURL('http://localhost:8080?s=1') })
-r2 <- jq$run({ RCurl::getURL('http://localhost:8080?s=1') })
-r3 <- jq$run({ RCurl::getURL('http://localhost:8080?s=1') })
+dput(fetch(
+  'http://localhost:8080?sleep=1',
+  'http://localhost:8080?sleep=1',
+  'http://localhost:8080?sleep=1' ))
+#> c("hello", "hello", "interrupt: Too many concurrent jobs.\n")
 
-r1$result
-#> [1] "hello"
-
-r2$result
-#> [1] "hello"
-
-r3$result
-#> [1] "interrupt: Too many concurrent jobs.\n"
-
-jq$stop()
 wq$stop()
 ```
 
 ### Stop Other Jobs
 
-Suppose an admin needs to stop all jobs for a particular user.
+Suppose an admin needs to stop all 
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html)s 
+for a particular user.
 
 ```r
 stop_user <- function (job) {
@@ -241,7 +255,7 @@ stop_user <- function (job) {
   if (!is.null(stop_uid)) {
   
     for (j in job$queue$jobs)
-      if (j$req$ARGS$u == stop_uid)
+      if (j$req$ARGS$uid == stop_uid)
         j$stop('Stopped by admin.')
     
     job$output <- 'done'
@@ -251,21 +265,20 @@ stop_user <- function (job) {
 wq <- webqueue(handler, hooks = list(queued = stop_user))
 
 # Fetch three URLs at the same time.
-jq <- jobqueue::jobqueue(workers = 3L)
-r1 <- jq$run({ RCurl::getURL('http://localhost:8080?u=1&s=10')   })
-r2 <- jq$run({ RCurl::getURL('http://localhost:8080?u=1&s=10')   })
-r3 <- jq$run({ RCurl::getURL('http://localhost:8080?u=2&stop=1') })
+responses <- fetch(
+  'http://localhost:8080?uid=1&sleep=10',
+  'http://localhost:8080?uid=1&sleep=10',
+  'http://localhost:8080?uid=2&stop=1' )
 
-r1$result
+responses[[1]]
 #> [1] "interrupt: Stopped by admin.\n"
 
-r2$result
+responses[[2]]
 #> [1] "interrupt: Stopped by admin.\n"
 
-r3$result
+responses[[3]]
 #> [1] "done"
 
-jq$stop()
 wq$stop()
 ```
 

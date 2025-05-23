@@ -1,7 +1,9 @@
 
 
 importFrom("cli", "ansi_strip", "cli_abort", "cli_text", "style_italic", "col_grey", "style_bold")
+importFrom("curl", "curl_fetch_multi", "multi_run")
 importFrom("httpuv", "randomPort", "startServer", "staticPath", "staticPathOptions")
+importFrom("interprocess", "mutex")
 importFrom("jobqueue", "jobqueue", "%<>%", "%>%")
 importFrom("jsonlite", "fromJSON", "minify", "prettify", "toJSON", "unbox")
 importFrom("later", "later", "run_now")
@@ -9,11 +11,11 @@ importFrom("parallelly", "availableCores")
 importFrom("promises", "as.promise", "then")
 importFrom("R6", "R6Class")
 importFrom("rlang", "%||%", "as_function", "catch_cnd", "cnd_signal", "env_unbind", "is_formula", "is_environment")
-importFrom("interprocess", "semaphore")
 importFrom("webutils", "parse_http", "parse_query")
 importFrom("utils", "capture.output", "hasName", "str")
 
 export(`cookie`)
+export(`fetch`)
 export(`header`)
 export(`js_obj`)
 export(`response`)

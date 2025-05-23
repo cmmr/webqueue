@@ -1,12 +1,12 @@
 
 #' Compile an HTTP response.
 #' 
-#' If your webqueue's `handler` function returns a list, json object, character
-#' vector, or scalar integer, `response()` will be used to transform that 
-#' result into an HTTP response.\cr\cr
+#' If your `webqueue`'s `handler` function returns a list, json object,
+#' character vector, or scalar integer, `response()` will be used to transform
+#' that result into an HTTP response.\cr\cr
 #' You may also call `response()` within your handler to better customize the 
 #' HTTP response. Or, return a result of class 'AsIs' to have that object 
-#' passed directly on to 'httpuv'.
+#' passed directly on to `httpuv`.
 #' 
 #' @param body      The content. A list will be encoded as JSON. A scalar 
 #'                  integer will be interpreted as a status. A character vector
@@ -18,7 +18,7 @@
 #'                  key-value pairs to add to `headers`.
 #' 
 #' @return A `<response/AsIs>` object. Essentially a list with elements named
-#'         `body`, `status`, and `headers` formatted as 'httpuv' expects.
+#'         `body`, `status`, and `headers` formatted as `httpuv` expects.
 #' 
 #' @export
 #' @examples

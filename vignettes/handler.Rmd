@@ -9,7 +9,8 @@ vignette: >
 
 ## Overview
 
-The `handler` function is responsible for transforming a request (`req`) into a response (`resp`).
+The `handler` function is responsible for transforming a request (`req`) into a
+response (`resp`).
 
 ```r
 library(webqueue)
@@ -22,7 +23,6 @@ handler <- function (req) {
 
 
 ## HTTP Request
-
 
 If the HTTP request is:
 
@@ -130,11 +130,14 @@ wq$stop()
 
 ### Intermediate
 
-To construct more complex HTTP response, use the `response()`, `header()`, `cookie()`, and `js_obj()` functions.
+To construct more complex HTTP response, use the `response()`, `header()`, 
+`cookie()`, and `js_obj()` functions.
 
 > **Important**
 >
-> These functions will not be in the handler's environment by default. Either call them with the `webqueue::` prefix, or create a WebQueue with `packages = 'webqueue'`.
+> These functions will not be in the handler's environment by default. Either 
+> call them with the `webqueue::` prefix, or create a `webqueue` with 
+> `packages = 'webqueue'`.
 
 ```r
 wq <- webqueue(
@@ -167,7 +170,11 @@ wq$stop()
 
 ### Advanced
 
-To bypass webqueue's response formatting, wrap your response in `I()` to indicate it should be passed on to httpuv as-is. See the help page for `httpuv::startServer()` for a description of the expected `list(status, headers, body)` object. Although it says `body = NULL` is fine, I have found that to not be the case.
+To bypass `webqueue`'s response formatting, wrap your response in `I()` to
+indicate it should be passed on to `httpuv` as-is. See the help page for
+`httpuv::startServer()` for a description of the expected 
+`list(status, headers, body)` object. Although it says `body = NULL` is fine, 
+I have found that to not be the case.
 
 ```r
 wq <- webqueue(
@@ -179,7 +186,7 @@ wq <- webqueue(
       'x-user-id' = '100',
       'Access-Control-Expose-Headers' = 'x-user-id',
       'Content-Type' = 'application/json; charset=utf-8' )
-    I(list(body = body, status = status, headers = headers))
+    I(list(status = status, body = body, headers = headers))
   })
 
 httr2::request('http://localhost:8080') |>
@@ -203,9 +210,12 @@ wq$stop()
 
 ## Pre/Post Modifications
 
-The `handler` function is evaluated on a background process, and will not have access to any variables on the foreground process.
+The `handler` function is evaluated on a background process, and will not have
+access to any variables on the foreground process.
 
-However, there are opportunities make modifications on the foreground process to `req` before it is passed to the handler, and to `resp` after it is returned by the handler.
+However, there are opportunities to modify `req` on the foreground process
+before it is passed to the handler, and to modify `resp` after it is returned by
+the handler.
 
 > **Important**
 > 
@@ -215,7 +225,10 @@ However, there are opportunities make modifications on the foreground process to
 
 ### Request Parsing
 
-The `parse` function is called on `req` (an environment). Aside from `req$ARGS` and `req$COOKIES`, `req` is exactly as received from httpuv. After this callback, extraneous httpuv fields are removed from `req` to minimize the amount of data sent to the background process.
+The `parse` function is called on `req` (an environment). Aside from `req$ARGS`
+and `req$COOKIES`, `req` is exactly as received from `httpuv`. After this
+callback, extraneous `httpuv` fields are removed from `req` to minimize the 
+amount of data sent to the background process.
 
 * Any modifications to `req` are persistent.
 * To stop the request from this callback, use `stop()`.
@@ -231,16 +244,16 @@ parse <- local({
 })
 
 wq <- webqueue(
-  handler = function (req) { req$counter },
-  parse   = parse )
+  parse   = parse,
+  handler = function (req) { req$counter } )
 
-RCurl::getURL('http://localhost:8080')
+fetch('http://localhost:8080')
 #> [1] "1"
 
-RCurl::getURL('http://localhost:8080')
+fetch('http://localhost:8080')
 #> [1] "2"
 
-RCurl::getURL('http://localhost:8080')
+fetch('http://localhost:8080')
 #> [1] "3"
 
 wq$stop()
@@ -249,7 +262,10 @@ wq$stop()
 
 ### Job Hooks
 
-After `parse` is called, the resulting `req` is added to a Job. Callbacks are triggered when the Job enters the `'created'`, `'submitted'`, `'queued'`, and `'starting'` states.
+After `parse` is called, the resulting `req` is added to a `job` (see 
+[`jobqueue::job_class`](https://cmmr.github.io/jobqueue/reference/job_class.html)). 
+Callbacks are triggered when the `job` enters the `'created'`, `'submitted'`, 
+`'queued'`, and `'starting'` states.
 
 From these hooks you can edit both the `job` and `req` environment objects.
 
@@ -277,7 +293,7 @@ wq <- webqueue(
   handler = function (req) { req$ARGS },
   hooks   = hooks )
 
-cat(RCurl::getURL('http://localhost:8080'))
+cat(fetch('http://localhost:8080'))
 #> {"a":[1],"b":[2],"c":[3],"d":[4]}
 
 wq$stop()
@@ -287,9 +303,14 @@ wq$stop()
 
 ### Response Reformatting
 
-The `reformat` function lets you edit `resp` immediately after it's returned by `handler` (before webqueue and httpuv try to interpret it as an HTTP response).
+The `reformat` function lets you edit `resp` immediately after it's returned by
+`handler` (before `webqueue` and `httpuv` try to interpret it as an HTTP 
+response).
 
-You can access both the `job` and `req` environments. However, any changes made to `req` by `handler` will not be reflected here.
+You can access both the 
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) and `req` 
+environments. However, any changes made to `req` by `handler` will not be 
+reflected here.
 
 > **Important**
 > 
@@ -308,7 +329,7 @@ wq <- webqueue(
   handler  = ~{ 'Hello' },
   reformat = reformat )
 
-RCurl::getURL('http://localhost:8080')
+fetch('http://localhost:8080')
 #> [1] "<h1>Hello</h1>"
 
 wq$stop()

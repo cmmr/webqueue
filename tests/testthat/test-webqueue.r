@@ -17,7 +17,7 @@ test_that("webqueue", {
   
   
   
-  fetch <- function (cookies = NULL, post = NULL, query = NULL, path = '') {
+  fetch2 <- function (cookies = NULL, post = NULL, query = NULL, path = '') {
     
     req <- httr2::request(paste0('http://127.0.0.1:8080', path))
     req <- httr2::req_timeout(req, 5L)
@@ -56,43 +56,46 @@ test_that("webqueue", {
     workers = 1L, 
     bg      = FALSE )
   
-  expect_s3_class(wq, class = c('WebQueue', 'R6'))
+  expect_s3_class(wq, class = c('webqueue', 'R6'))
   expect_identical(wq$url, 'http://127.0.0.1:8080')
   expect_no_error(suppressMessages(wq$print()))
   
-  worker <- jobqueue::worker_class$new(globals = list(fetch = fetch))
+  worker <- jobqueue::worker_class$new(globals = list(fetch2 = fetch2))
   worker$wait()
   
-  job <- jobqueue::job_class$new({ fetch() })
+  job <- jobqueue::job_class$new({ fetch2() })
   worker$run(job)
   expect_identical(job$result$body, 'Hello World!')
   
-  job <- jobqueue::job_class$new({ fetch(cookies = 'xyz; b=5; txt=1=6') })
+  job <- jobqueue::job_class$new({ fetch2(cookies = 'xyz; b=5; txt=1=6') })
   worker$run(job)
   expect_identical(job$result$body, '1=6')
   
-  job <- jobqueue::job_class$new({ fetch(query = list(txt='ABC')) })
+  job <- jobqueue::job_class$new({ fetch2(query = list(txt='ABC')) })
   worker$run(job)
   expect_identical(job$result$body, 'ABC')
   
-  job <- jobqueue::job_class$new({ fetch(post = list(txt='XYZ')) })
+  job <- jobqueue::job_class$new({ fetch2(post = list(txt='XYZ')) })
   worker$run(job)
   expect_identical(job$result$body, 'XYZ')
   
-  job <- jobqueue::job_class$new({ fetch(post = list(err='timeout')) })
+  job <- jobqueue::job_class$new({ fetch2(post = list(err='timeout')) })
   worker$run(job)
   expect_identical(job$result$status, 408L)
   
-  job <- jobqueue::job_class$new({ fetch(post = list(err='superseded')) })
+  job <- jobqueue::job_class$new({ fetch2(post = list(err='superseded')) })
   worker$run(job)
   expect_identical(job$result$status, 409L)
   
-  job <- jobqueue::job_class$new({ fetch(post = list(err='interrupt')) })
+  job <- jobqueue::job_class$new({ fetch2(post = list(err='interrupt')) })
   worker$run(job)
   expect_identical(job$result$status, 499L)
   
+  expect_identical(wq$status, 'running')
   worker$stop()
   expect_silent(wq$stop())
+  expect_identical(wq$status, 'stopped')
+  expect_no_error(suppressMessages(wq$print()))
   
   
   
@@ -107,18 +110,20 @@ test_that("webqueue", {
   
   expect_identical(wq$url, 'http://127.0.0.1:8080')
   
-  expect_identical(fetch()$body, 'Hello World!')
-  expect_identical(fetch(cookies = 'xyz; b=5; txt=1=6')$body, '1=6')
-  expect_identical(fetch(query   = list(txt='ABC'))$body, 'ABC')
-  expect_identical(fetch(post    = list(txt='XYZ'))$body, 'XYZ')
-  expect_identical(fetch(post    = list(err='timeout'))$status,    408L)
-  expect_identical(fetch(post    = list(err='superseded'))$status, 409L)
-  expect_identical(fetch(post    = list(err='interrupt'))$status,  499L)
+  expect_identical(fetch2()$body, 'Hello World!')
+  expect_identical(fetch2(cookies = 'xyz; b=5; txt=1=6')$body, '1=6')
+  expect_identical(fetch2(query   = list(txt='ABC'))$body, 'ABC')
+  expect_identical(fetch2(post    = list(txt='XYZ'))$body, 'XYZ')
+  expect_identical(fetch2(post    = list(err='timeout'))$status,    408L)
+  expect_identical(fetch2(post    = list(err='superseded'))$status, 409L)
+  expect_identical(fetch2(post    = list(err='interrupt'))$status,  499L)
   
   cat(file = file.path(tmp, 'static.txt'), 'Static Content')
-  expect_identical(fetch(path = '/tmp/static.txt')$body, 'Static Content')
+  expect_identical(fetch2(path = '/tmp/static.txt')$body, 'Static Content')
   
+  expect_identical(wq$status, 'running')
   expect_no_error(wq$stop())
+  expect_identical(wq$status, 'stopped')
   
   
   if (dir.exists(tmp)) unlink(tmp, recursive = TRUE)

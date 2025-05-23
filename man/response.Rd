@@ -21,15 +21,15 @@ key-value pairs to add to \code{headers}.}
 }
 \value{
 A \verb{<response/AsIs>} object. Essentially a list with elements named
-\code{body}, \code{status}, and \code{headers} formatted as 'httpuv' expects.
+\code{body}, \code{status}, and \code{headers} formatted as \code{httpuv} expects.
 }
 \description{
-If your webqueue's \code{handler} function returns a list, json object, character
-vector, or scalar integer, \code{response()} will be used to transform that
-result into an HTTP response.\cr\cr
+If your \code{webqueue}'s \code{handler} function returns a list, json object,
+character vector, or scalar integer, \code{response()} will be used to transform
+that result into an HTTP response.\cr\cr
 You may also call \code{response()} within your handler to better customize the
 HTTP response. Or, return a result of class 'AsIs' to have that object
-passed directly on to 'httpuv'.
+passed directly on to \code{httpuv}.
 }
 \examples{
 
