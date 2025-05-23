@@ -128,7 +128,7 @@ wq$stop()
 # `copy_id` will be "/a" or "/b"
 wq <- webqueue(
   handler = function (req) { Sys.sleep(1); req$ARGS$x }, 
-  copy_id = function (job) job$req$PATH_INFO )
+  copy_id = function (job) { job$req$PATH_INFO        } )
 
 # Fetch three URLs at the same time. "/b" path is merged.
 dput(fetch(
@@ -146,7 +146,7 @@ wq$stop()
 # `stop_id` will be "/a" or "/b"
 wq <- webqueue(
   handler = function (req) { Sys.sleep(1); req$ARGS$x }, 
-  stop_id = function (job) job$req$PATH_INFO )
+  stop_id = function (job) { job$req$PATH_INFO        } )
 
 # Fetch three URLs at the same time. "/b" path is stopped.
 dput(fetch(

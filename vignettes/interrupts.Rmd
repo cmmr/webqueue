@@ -23,7 +23,7 @@ Interrupts in `webqueue` fall into three categories:
 A request (`req`) is an environment with the data sent from a web browser to 
 the web server. A `job` is a 
 [`jobqueue::job_class` R6 object](https://cmmr.github.io/jobqueue/reference/job_class.html) 
-containing a single `req` along with the parameters for processing it.
+containing a `req` (`<job>$req`) and the parameters for processing it.
 
 Some useful elements of each are:
 
@@ -56,16 +56,15 @@ library(webqueue)
 # Adding '?return=myvalue' will return "myvalue" instead.
 # Adding '?sleep=2' will wait 2 seconds before returning.
 handler <- function (req) {
-  args <- req$ARGS # POST/GET parameters
-  if (!is.null(args$sleep))  Sys.sleep(args$sleep)
-  if (!is.null(args$return)) args$return else 'hello'
+  if (!is.null(req$ARGS$sleep))  Sys.sleep(req$ARGS$sleep)
+  if (!is.null(req$ARGS$return)) req$ARGS$return else 'hello'
 }
 
 ```
 
 To interrupt a 
 [`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) from within
-`handler`, call `stop()` or `cli_abort()` as usual, or 
+`handler`, call `stop()`, `rlang::abort()`, or `cli::cli_abort()` as usual, or 
 `return (webqueue::response())` to send a more informative message back.
 
 
@@ -81,13 +80,13 @@ Let's start by limiting all
 ```r
 wq <- webqueue(handler, timeout = 1)
 
-getURL('http://localhost:8080')
+fetch('http://localhost:8080')
 #> [1] "hello"
 
-getURL('http://localhost:8080?return=hi')
+fetch('http://localhost:8080?return=hi')
 #> [1] "hi"
 
-getURL('http://localhost:8080?sleep=3')
+fetch('http://localhost:8080?sleep=3')
 #> [1] "timeout: total runtime exceeded 1 second\n"
 
 wq$stop()
@@ -116,7 +115,7 @@ reference page for information on all standard `job` states.
 wq <- webqueue(handler, timeout = c(queued = 1))
 
 # spend 3 seconds in 'running' state
-getURL('http://localhost:8080?sleep=3')
+fetch('http://localhost:8080?sleep=3')
 #> [1] "hello"
 
 wq$stop()
@@ -134,10 +133,10 @@ timeout <- function (job) {
 
 wq <- webqueue(handler, timeout = timeout)
 
-getURL('http://localhost:8080/compute?sleep=3')
+fetch('http://localhost:8080/compute?sleep=3')
 #> [1] "hello"
 
-getURL('http://localhost:8080?sleep=3')
+fetch('http://localhost:8080?sleep=3')
 #> [1] "timeout: total runtime exceeded 1 second\n"
 
 wq$stop()
@@ -187,8 +186,8 @@ an actual request.
 ## Custom
 
 Anywhere you provide a `function (job)`, you can examine 
-[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) and `req`, 
-and call `job$stop()` as needed.
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) and `req` 
+(`<job>$req`), and call `job$stop()` as needed.
 
 ### IP Filter
 
@@ -215,7 +214,9 @@ this particular task more efficiently.
 
 ### Limit Concurrency
 
-Once the job is assigned to a `jobqueue`, you can access the list of all 
+Once the job is assigned to a 
+[`jobqueue`](https://cmmr.github.io/jobqueue/reference/jobqueue_class.html), 
+you can access the list of all 
 [`job`](https://cmmr.github.io/jobqueue/reference/job_class.html)s that are 
 currently queued or running.
 

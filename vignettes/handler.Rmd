@@ -130,7 +130,7 @@ wq$stop()
 
 ### Intermediate
 
-To construct more complex HTTP response, use the `response()`, `header()`, 
+To construct a more complex HTTP response, use the `response()`, `header()`, 
 `cookie()`, and `js_obj()` functions.
 
 > **Important**
@@ -225,10 +225,10 @@ the handler.
 
 ### Request Parsing
 
-The `parse` function is called on `req` (an environment). Aside from `req$ARGS`
-and `req$COOKIES`, `req` is exactly as received from `httpuv`. After this
-callback, extraneous `httpuv` fields are removed from `req` to minimize the 
-amount of data sent to the background process.
+The `parse` function is called on `req` before it is passed to the background
+process. Aside from `req$ARGS` and `req$COOKIES`, `req` is exactly as received
+from `httpuv`. After this callback, extraneous `httpuv` fields are removed from
+`req` to minimize the amount of data sent to the background process.
 
 * Any modifications to `req` are persistent.
 * To stop the request from this callback, use `stop()`.
@@ -267,10 +267,10 @@ After `parse` is called, the resulting `req` is added to a `job` (see
 Callbacks are triggered when the `job` enters the `'created'`, `'submitted'`, 
 `'queued'`, and `'starting'` states.
 
-From these hooks you can edit both the `job` and `req` environment objects.
+From these hooks you can edit both the `job` and `req` (`<job>$req`) objects.
 
 * Any modifications to `job` and `req` are persistent.
-* To stop the request from this callback, use `job$stop()`.
+* To stop the request from this callback, use `<job>$stop()`.
 * The return value from hooks are ignored.
 
 ```r
@@ -308,16 +308,16 @@ The `reformat` function lets you edit `resp` immediately after it's returned by
 response).
 
 You can access both the 
-[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) and `req` 
-environments. However, any changes made to `req` by `handler` will not be 
-reflected here.
+[`job`](https://cmmr.github.io/jobqueue/reference/job_class.html) and `req`
+(`<job>$req`) objects. However, any changes made to `req` by `handler` will not
+be reflected here.
 
 > **Important**
 > 
-> Do NOT call `job$result` from within the `reformat` function - it will
-> trigger an infinite recursion. Instead, access `job$output`.
+> Do NOT call `<job>$result` from within the `reformat` function - it will
+> trigger an infinite recursion. Instead, access `<job>$output`.
 
-* To stop the request from this callback, use `job$stop()`.
+* To stop the request from this callback, use `<job>$stop()`.
 * The return value is used as the new `resp`.
 
 ```r

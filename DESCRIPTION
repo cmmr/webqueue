@@ -30,7 +30,7 @@ Imports:
     httpuv,
     interprocess (>= 1.2.0),
     jsonlite,
-    jobqueue (>= 1.6.6),
+    jobqueue (>= 1.7.0),
     later,
     parallelly,
     promises,
@@ -42,6 +42,5 @@ Suggests:
     httr2,
     knitr,
     rmarkdown,
-    testthat (>= 3.0.0),
+    testthat,
     withr
-Remotes:cmmr/jobqueue
