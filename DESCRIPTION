@@ -44,3 +44,4 @@ Suggests:
     rmarkdown,
     testthat,
     withr
+Remotes:cmmr/jobqueue,cmmr/interprocess
