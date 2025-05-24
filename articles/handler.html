@@ -186,7 +186,7 @@ Content-Length: 25
 <div class="section level3">
 <h3 id="intermediate">Intermediate<a class="anchor" aria-label="anchor" href="#intermediate"></a>
 </h3>
-<p>To construct more complex HTTP response, use the
+<p>To construct a more complex HTTP response, use the
 <code><a href="../reference/response.html">response()</a></code>, <code><a href="../reference/header.html">header()</a></code>, <code><a href="../reference/cookie.html">cookie()</a></code>,
 and <code><a href="../reference/js_obj.html">js_obj()</a></code> functions.</p>
 <blockquote>
@@ -279,12 +279,12 @@ handling.</p>
 <div class="section level3">
 <h3 id="request-parsing">Request Parsing<a class="anchor" aria-label="anchor" href="#request-parsing"></a>
 </h3>
-<p>The <code>parse</code> function is called on <code>req</code> (an
-environment). Aside from <code>req$ARGS</code> and
-<code>req$COOKIES</code>, <code>req</code> is exactly as received from
-<code>httpuv</code>. After this callback, extraneous <code>httpuv</code>
-fields are removed from <code>req</code> to minimize the amount of data
-sent to the background process.</p>
+<p>The <code>parse</code> function is called on <code>req</code> before
+it is passed to the background process. Aside from <code>req$ARGS</code>
+and <code>req$COOKIES</code>, <code>req</code> is exactly as received
+from <code>httpuv</code>. After this callback, extraneous
+<code>httpuv</code> fields are removed from <code>req</code> to minimize
+the amount of data sent to the background process.</p>
 <ul>
 <li>Any modifications to <code>req</code> are persistent.</li>
 <li>To stop the request from this callback, use
@@ -324,12 +324,12 @@ Callbacks are triggered when the <code>job</code> enters the
 <code>'created'</code>, <code>'submitted'</code>, <code>'queued'</code>,
 and <code>'starting'</code> states.</p>
 <p>From these hooks you can edit both the <code>job</code> and
-<code>req</code> environment objects.</p>
+<code>req</code> (<code>&lt;job&gt;$req</code>) objects.</p>
 <ul>
 <li>Any modifications to <code>job</code> and <code>req</code> are
 persistent.</li>
 <li>To stop the request from this callback, use
-<code>job$stop()</code>.</li>
+<code>&lt;job&gt;$stop()</code>.</li>
 <li>The return value from hooks are ignored.</li>
 </ul>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
@@ -365,17 +365,18 @@ immediately after it’s returned by <code>handler</code> (before
 <code>webqueue</code> and <code>httpuv</code> try to interpret it as an
 HTTP response).</p>
 <p>You can access both the <a href="https://cmmr.github.io/jobqueue/reference/job_class.html" class="external-link"><code>job</code></a>
-and <code>req</code> environments. However, any changes made to
-<code>req</code> by <code>handler</code> will not be reflected here.</p>
+and <code>req</code> (<code>&lt;job&gt;$req</code>) objects. However,
+any changes made to <code>req</code> by <code>handler</code> will not be
+reflected here.</p>
 <blockquote>
 <p><strong>Important</strong></p>
-<p>Do NOT call <code>job$result</code> from within the
+<p>Do NOT call <code>&lt;job&gt;$result</code> from within the
 <code>reformat</code> function - it will trigger an infinite recursion.
-Instead, access <code>job$output</code>.</p>
+Instead, access <code>&lt;job&gt;$output</code>.</p>
 </blockquote>
 <ul>
 <li>To stop the request from this callback, use
-<code>job$stop()</code>.</li>
+<code>&lt;job&gt;$stop()</code>.</li>
 <li>The return value is used as the new <code>resp</code>.</li>
 </ul>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
